@@ -31,33 +31,69 @@ export default function AudioPlayer() {
                 <div className={`
                     relative mx-auto transition-all duration-500 ease-in-out
                     ${isExpanded ? 'max-w-6xl p-8 rounded-3xl' : 'max-w-5xl p-4 rounded-2xl'}
-                    bg-black/60 backdrop-blur-2xl border border-white/10 shadow-2xl pointer-events-auto overflow-hidden group/player
+                    bg-black/90 md:bg-black/60 backdrop-blur-2xl border border-white/10 shadow-2xl pointer-events-auto overflow-hidden group/player
                 `}>
                     {/* Ripple background effect */}
-                    <div className={`absolute inset-0 pointer-events-none transition-opacity duration-1000 ${isPlaying ? 'opacity-100' : 'opacity-0'}`}>
-                        <Ripple mainCircleSize={350} mainCircleOpacity={0.30} numCircles={5} className="[mask-image:radial-gradient(circle_at_center,white,transparent)]" />
+                    <div className={`absolute inset-0 pointer-events-none transition-opacity duration-1000 ${isPlaying ? 'opacity-100' : 'opacity-0'} overflow-hidden rounded-2xl md:rounded-3xl`}>
+                        <div className="hidden md:block">
+                            <Ripple mainCircleSize={350} mainCircleOpacity={0.30} numCircles={5} className="[mask-image:radial-gradient(circle_at_center,white,transparent)]" />
+                        </div>
+                        <div className="block md:hidden">
+                            <Ripple mainCircleSize={64} mainCircleOpacity={0.32} numCircles={5} className="[mask-image:radial-gradient(circle_at_end,white,transparent)]" />
+                        </div>
                     </div>
                     
-                    <div className="relative flex items-center gap-6 z-10">
-                        {/* Spectrum Visualizer & Title */}
-                        <div className={`flex items-center gap-6 transition-all duration-500 basis-1/4 ${isExpanded ? 'min-w-[340px]' : 'min-w-[240px]'}`}>
-                            <div className={`
-                                transition-all duration-500 rounded-xl bg-zinc-900/50 border border-white/5 overflow-hidden flex-shrink-0
-                                ${isExpanded ? 'size-24' : 'size-16'}
-                            `}>
-                                <SpectrumVisualizer isPlaying={isPlaying} className="scale-x-[-1]" />
+                    <div className="relative flex flex-col md:flex-row items-center gap-2 md:gap-6 z-10 w-full">
+                        {/* Mobile Top Row: Info + Play Controls */}
+                        <div className="flex items-center justify-between w-full md:w-auto md:contents">
+                            {/* Spectrum Visualizer & Title */}
+                            <div className={`flex items-center gap-3 md:gap-6 transition-all duration-500 min-w-0 md:basis-1/4 ${isExpanded ? 'md:min-w-[340px]' : 'md:min-w-[240px]'}`}>
+                                <div className={`
+                                    transition-all duration-500 rounded-xl bg-zinc-900/50 border border-white/5 overflow-hidden flex-shrink-0
+                                    ${isExpanded ? 'size-12 md:size-24' : 'size-12 md:size-16'}
+                                `}>
+                                    <SpectrumVisualizer isPlaying={isPlaying} className="scale-x-[-1]" />
+                                </div>
+                                <div className="overflow-hidden min-w-0 flex-1">
+                                    <h4 className={`font-bold truncate tracking-tight transition-all ${isExpanded ? 'text-sm md:text-lg' : 'text-xs md:text-sm'}`}>{currentSong.title}</h4>
+                                    <p className={`text-zinc-500 uppercase tracking-widest font-bold truncate transition-all mt-0.5 ${isExpanded ? 'text-[9px] md:text-xs md:mt-1' : 'text-[9px] md:text-[10px]'}`}>
+                                        {currentSong.album?.title || 'Santo Music'}
+                                    </p>
+                                </div>
                             </div>
-                            <div className="overflow-hidden">
-                                <h4 className={`font-bold truncate tracking-tight transition-all ${isExpanded ? 'text-lg' : 'text-sm'}`}>{currentSong.title}</h4>
-                                <p className={`text-zinc-500 uppercase tracking-widest font-bold truncate transition-all ${isExpanded ? 'text-xs mt-1' : 'text-[10px]'}`}>
-                                    {currentSong.album?.title || 'Santo Music'}
-                                </p>
+
+                            {/* Mobile Controls (Hidden on Desktop) */}
+                            <div className="flex md:hidden items-center gap-1 flex-shrink-0">
+                                <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="text-zinc-400 hover:text-white hover:bg-zinc-800 size-8"
+                                    onClick={playPrevious}
+                                >
+                                    <SkipBack className="size-4 fill-current" />
+                                </Button>
+                                <Button 
+                                    size="icon" 
+                                    className="size-10 rounded-full bg-white text-black shadow-lg hover:scale-105 transition-transform"
+                                    onClick={togglePlay}
+                                >
+                                    {isPlaying ? <Pause className="size-4 fill-current" /> : <Play className="size-4 fill-current ml-1" />}
+                                </Button>
+                                <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="text-zinc-400 hover:text-white hover:bg-zinc-800 size-8"
+                                    onClick={playNext}
+                                >
+                                    <SkipForward className="size-4 fill-current" />
+                                </Button>
                             </div>
                         </div>
 
-                        {/* Controls & Progress */}
-                        <div className="flex-1 space-y-2">
-                            <div className="flex items-center justify-center gap-6">
+                        {/* Desktop Controls & Universal Progress */}
+                        <div className="w-full md:flex-1 space-y-1 md:space-y-2">
+                            {/* Desktop Controls (Hidden on Mobile) */}
+                            <div className="hidden md:flex items-center justify-center gap-6">
                                 <Button 
                                     variant="ghost" 
                                     size="icon" 
@@ -107,8 +143,9 @@ export default function AudioPlayer() {
                                 </Button>
                             </div>
                             
-                            <div className="flex items-center gap-4">
-                                <span className="text-[10px] tabular-nums text-zinc-500 w-10 text-right">
+                            {/* Progress Bar (Visible on both) */}
+                            <div className="flex items-center gap-3 md:gap-4">
+                                <span className="text-[9px] md:text-[10px] tabular-nums text-zinc-500 w-8 md:w-10 text-right">
                                     {formatTime(progress)}
                                 </span>
                                 <Slider
@@ -118,7 +155,7 @@ export default function AudioPlayer() {
                                     className="flex-1 cursor-pointer"
                                     onValueChange={(val: number[]) => setProgress(val[0])}
                                 />
-                                <span className="text-[10px] tabular-nums text-zinc-500 w-10">
+                                <span className="text-[9px] md:text-[10px] tabular-nums text-zinc-500 w-8 md:w-10">
                                     {formatTime(duration)}
                                 </span>
                             </div>

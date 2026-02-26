@@ -15,14 +15,14 @@ export const SpectrumVisualizer = ({ isPlaying, className = "" }: SpectrumVisual
     }));
 
     return (
-        <div className={`flex items-end gap-[3px] h-full w-full justify-center px-2 py-3 ${className}`}>
+        <div className={`flex items-end gap-[1px] md:gap-[3px] h-full w-full justify-center px-1 md:px-2 py-2 md:py-3 ${className}`}>
             {bars.map((bar) => (
                 <div
                     key={bar.id}
                     className={`
-                        w-1.5 rounded-full bg-gradient-to-t from-indigo-600 via-violet-500 to-indigo-400
+                        w-[2px] md:w-1.5 rounded-full bg-gradient-to-t from-indigo-600 via-violet-500 to-indigo-400
                         transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.4)]
-                        ${isPlaying ? 'animate-spectrum' : 'h-1.5 opacity-40'}
+                        ${isPlaying ? 'animate-spectrum' : 'h-[2px] md:h-1.5 opacity-40'}
                     `}
                     style={{
                         height: isPlaying ? '100%' : `${bar.initialHeight}%`,
