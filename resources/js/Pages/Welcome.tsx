@@ -13,7 +13,7 @@ export default function Welcome({ auth }: PageProps) {
         <PublicLayout>
             <Head title="Santo Music" />
 
-            <div className="relative h-[100dvh] md:h-[80vh] min-h-[500px] w-full overflow-hidden">
+            <div className="relative h-[60vh] md:h-[80vh] min-h-[500px] w-full overflow-hidden">
                 {/* Hero Image Overlay */}
                 <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#0a0a0a] via-transparent to-black/20 pointer-events-none" />
 
@@ -44,7 +44,7 @@ export default function Welcome({ auth }: PageProps) {
                 )}
 
                 {/* Hero Content */}
-                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-6 pt-20 md:pt-0 text-center pointer-events-none">
+                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-6 md:pt-0 text-center pointer-events-none">
                     {settings?.logo_home ? (
                         <>
                             {/* Desktop (WebGL animated) */}
@@ -57,11 +57,11 @@ export default function Welcome({ auth }: PageProps) {
                             </div>
                             
                             {/* Mobile (Static but reliable and sharp) */}
-                            <div className="block md:hidden w-full max-w-xs animate-in fade-in zoom-in duration-1000 mt-10">
+                            <div className="block md:hidden w-full max-w-xs animate-in fade-in zoom-in duration-1000">
                                 <img 
                                     src={settings.logo_home} 
                                     alt="Santo Music Logo" 
-                                    className="w-full h-auto object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.15)] filter brightness-0 invert"
+                                    className="w-full h-auto object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.15)]"
                                 />
                             </div>
                         </>
