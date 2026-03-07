@@ -20,20 +20,20 @@ class MakeAdminUser extends Command
      *
      * @var string
      */
-    protected $description = 'Crea o actualiza el usuario administrador de Linkiu';
+    protected $description = 'Crea o actualiza el usuario administrador de Santo Music';
 
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        $email = 'admin@linkiu.bio';
+        $email = 'admin@santomusic.com';
         $password = 'password';
 
         $user = User::updateOrCreate(
             ['email' => $email],
             [
-                'name' => 'Admin Linkiu',
+                'name' => 'Admin Santo Music',
                 'password' => Hash::make($password),
                 'is_admin' => true,
                 'email_verified_at' => now(), // Auto-verify so they can login immediately

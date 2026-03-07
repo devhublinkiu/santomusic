@@ -50,7 +50,7 @@ export default function BoldIntegration({ settings }: { settings: SiteSettings }
         <AppLayout
             header={<h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">Pasarela Bold.co</h2>}
         >
-            <Head title="Bold.co - Admin" />
+            <Head title="Admin: Bold.co" />
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl space-y-8 sm:px-6 lg:px-8">

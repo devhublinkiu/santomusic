@@ -59,7 +59,7 @@ export default function Show({ album }: { album: Album }) {
 
     return (
         <PublicLayout>
-            <Head title={`${album.title} - Santo Music`} />
+            <Head title={album.title} />
 
             <div className="py-24 px-6 md:px-12">
                 <div className="mx-auto max-w-6xl">
@@ -122,9 +122,6 @@ export default function Show({ album }: { album: Album }) {
                                         </div>
                                     </div>
                                     
-                                    <p className="text-zinc-400 text-sm leading-relaxed italic border-l-2 border-white/10 pl-4">
-                                        {album.description || 'Sin descripción disponible.'}
-                                    </p>
 
                                     <Button 
                                         onClick={handlePlayAll}

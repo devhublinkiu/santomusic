@@ -48,7 +48,7 @@ export default function YouTubeIntegration({ settings }: { settings: SiteSetting
         <AppLayout
             header={<h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">Canal de YouTube</h2>}
         >
-            <Head title="YouTube - Admin" />
+            <Head title="Admin: YouTube" />
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl space-y-8 sm:px-6 lg:px-8">

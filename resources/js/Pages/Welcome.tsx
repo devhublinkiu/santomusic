@@ -11,7 +11,7 @@ export default function Welcome({ auth }: PageProps) {
     const settings = site?.settings;
     return (
         <PublicLayout>
-            <Head title="Santo Music" />
+            <Head title="Inicio" />
 
             <div className="relative h-[60vh] md:h-[80vh] min-h-[500px] w-full overflow-hidden">
                 {/* Hero Image Overlay */}
@@ -31,14 +31,14 @@ export default function Welcome({ auth }: PageProps) {
                     ) : (
                         <img
                             src={settings.hero_background}
-                            alt="Santo Music Background"
+                            alt="Fondo de Santo Music"
                             className="absolute inset-0 h-full w-full object-cover grayscale brightness-50 pointer-events-none"
                         />
                     )
                 ) : (
                     <img
                         src="https://images.unsplash.com/photo-1514525253344-f81bad3b757a?auto=format&fit=crop&q=80&w=2575"
-                        alt="Santo Music Default"
+                        alt="Fondo Predeterminado Santo Music"
                         className="absolute inset-0 h-full w-full object-cover grayscale brightness-50 pointer-events-none"
                     />
                 )}
@@ -60,7 +60,7 @@ export default function Welcome({ auth }: PageProps) {
                             <div className="block md:hidden w-full max-w-xs animate-in fade-in zoom-in duration-1000">
                                 <img 
                                     src={settings.logo_home} 
-                                    alt="Santo Music Logo" 
+                                    alt="Logo de Santo Music" 
                                     className="w-full h-auto object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.15)]"
                                 />
                             </div>

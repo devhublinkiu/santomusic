@@ -95,7 +95,7 @@ export default function Form({ album }: { album?: Album }) {
                 </div>
             }
         >
-            <Head title={isEditing ? `Editar: ${album.title} - Santo Music` : 'Nuevo Álbum - Santo Music'} />
+            <Head title={isEditing ? `Admin: Editar Álbum` : 'Admin: Nuevo Álbum'} />
 
             <div className="py-12">
                 <div className="mx-auto max-w-5xl space-y-8 sm:px-6 lg:px-8">

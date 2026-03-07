@@ -32,7 +32,7 @@ export default function ContactIndex() {
 
     return (
         <PublicLayout>
-            <Head title="Contacto - Santo Music" />
+            <Head title="Contacto" />
 
             <div className="min-h-screen bg-[#0a0a0a] text-white">
                 {/* Hero Section */}
@@ -45,12 +45,9 @@ export default function ContactIndex() {
                         <BlurFade delay={0.1}>
                             <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-none mb-4">
                                 <AuroraText colors={["#949494ff", "#dadadaff", "#556475ff", "#cfcfcfff"]}>
-                                    Let's Connect.
+                                    Conectemos.
                                 </AuroraText>
                             </h1>
-                            <p className="text-zinc-500 uppercase tracking-[0.3em] text-[10px] md:text-xs font-medium max-w-lg mx-auto">
-                                Estamos listos para escuchar sobre tu próximo proyecto musical.
-                            </p>
                         </BlurFade>
                     </div>
                 </div>

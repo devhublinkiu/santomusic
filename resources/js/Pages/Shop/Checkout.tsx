@@ -70,7 +70,7 @@ export default function Checkout() {
 
     return (
         <PublicLayout>
-            <Head title="Checkout - Santo Music" />
+            <Head title="Finalizar Compra" />
             
             <div className="min-h-screen pt-32 pb-20 px-6">
                 <div className="container mx-auto max-w-6xl">
@@ -80,7 +80,6 @@ export default function Checkout() {
                         </Link>
                         <div>
                             <h1 className="text-4xl font-black uppercase tracking-tighter">Finalizar Compra</h1>
-                            <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Paso Final • Pago Seguro</p>
                         </div>
                     </div>
 

@@ -135,7 +135,7 @@ export default function AccessCodesIndex({ codes }: { codes: AccessCode[] }) {
                 </h2>
             }
         >
-            <Head title="Códigos - Admin" />
+            <Head title="Admin: Códigos" />
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">

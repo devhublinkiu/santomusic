@@ -109,28 +109,25 @@ export default function AccessCodeLock({ isVerified, onVerified }: AccessCodeLoc
                 onEscapeKeyDown={(e) => e.preventDefault()}
             >
                 <DialogHeader>
-                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-500/10 mb-4">
-                        <Lock className="h-6 w-6 text-indigo-400" />
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
+                        <Lock className="h-6 w-6 text-white/50" />
                     </div>
-                    <DialogTitle className="text-center text-xl">Acceso Restringido</DialogTitle>
-                    <DialogDescription className="text-center text-zinc-400">
-                        Introduce el código de acceso proporcionado para ver este contenido.
-                    </DialogDescription>
+                    <img src="/icons/Snto.png" alt="" className="w-[150px] mx-auto h-[150px] filter brightness-0 invert" />
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="space-y-6 flex flex-col items-center mt-4">
+                <form onSubmit={handleSubmit} className="space-y-6 flex flex-col items-center -mt-8">
                     <InputOTP
                         maxLength={6}
                         value={data.code}
                         onChange={(value) => setData('code', value.toUpperCase())}
                     >
                         <InputOTPGroup>
-                            <InputOTPSlot index={0} className="w-10 h-14 text-lg border-zinc-700 data-[active]:border-indigo-500 text-white" />
-                            <InputOTPSlot index={1} className="w-10 h-14 text-lg border-zinc-700 data-[active]:border-indigo-500 text-white" />
-                            <InputOTPSlot index={2} className="w-10 h-14 text-lg border-zinc-700 data-[active]:border-indigo-500 text-white" />
-                            <InputOTPSlot index={3} className="w-10 h-14 text-lg border-zinc-700 data-[active]:border-indigo-500 text-white" />
-                            <InputOTPSlot index={4} className="w-10 h-14 text-lg border-zinc-700 data-[active]:border-indigo-500 text-white" />
-                            <InputOTPSlot index={5} className="w-10 h-14 text-lg border-zinc-700 data-[active]:border-indigo-500 text-white" />
+                            <InputOTPSlot index={0} className="w-10 h-14 text-lg border-white/10 data-[active]:border-white/50 text-white" />
+                            <InputOTPSlot index={1} className="w-10 h-14 text-lg border-white/10 data-[active]:border-white/50 text-white" />
+                            <InputOTPSlot index={2} className="w-10 h-14 text-lg border-white/10 data-[active]:border-white/50 text-white" />
+                            <InputOTPSlot index={3} className="w-10 h-14 text-lg border-white/10 data-[active]:border-white/50 text-white" />
+                            <InputOTPSlot index={4} className="w-10 h-14 text-lg border-white/10 data-[active]:border-white/50 text-white" />
+                            <InputOTPSlot index={5} className="w-10 h-14 text-lg border-white/10 data-[active]:border-white/50 text-white" />
                         </InputOTPGroup>
                     </InputOTP>
 
@@ -138,7 +135,7 @@ export default function AccessCodeLock({ isVerified, onVerified }: AccessCodeLoc
 
                     <Button
                         type="submit"
-                        className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-6"
+                        className="w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-6"
                         disabled={processing || data.code.length < 6}
                     >
                         {processing ? <Loader2 className="animate-spin" /> : 'Verificar Código'}

@@ -35,7 +35,7 @@ export default function ShopIndex({
 
     return (
         <PublicLayout>
-            <Head title="Tienda - Santo Music" />
+            <Head title="Tienda" />
 
             <div className="min-h-screen bg-[#0a0a0a] text-white">
                 {/* Hero Section */}
@@ -48,12 +48,9 @@ export default function ShopIndex({
                         <BlurFade delay={0.1}>
                             <h1 className="text-7xl font-black uppercase tracking-tighter leading-none mb-4">
                                 <AuroraText colors={["#949494ff", "#dadadaff", "#556475ff", "#cfcfcfff"]}>
-                                    The Shop.
+                                    Tienda
                                 </AuroraText>
                             </h1>
-                            <p className="text-zinc-500 uppercase tracking-[0.3em] text-xs font-medium max-w-lg mx-auto">
-                                Equipamiento y servicios premium para elevar tu experiencia musical.
-                            </p>
                         </BlurFade>
                     </div>
                 </div>
@@ -200,7 +197,7 @@ function ProductCard({
             {/* Tag */}
             <div className="absolute top-10 left-10 z-20">
                 <span className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white/70 text-[10px] font-black uppercase tracking-[0.2em] backdrop-blur-md">
-                    Limited Edition
+                    Edición Limitada
                 </span>
             </div>
         </div>

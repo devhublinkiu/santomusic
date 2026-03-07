@@ -19,8 +19,8 @@ export default function PublicLayout({ children }: PropsWithChildren) {
     const navItems = [
         { label: 'Inicio', href: '/' },
         { label: 'Música', href: route('music.index') },
-        { label: 'Channel', href: route('channel.index') },
-        { label: 'Shop', href: route('shop.index') },
+        { label: 'Canal', href: route('channel.index') },
+        { label: 'Tienda', href: route('shop.index') },
         { label: 'Bodas', href: route('weddings.index'), icon: '/icons/anillo-de-bodas.png' },
         { label: 'Contacto', href: route('contact.index') },
     ];
@@ -156,7 +156,7 @@ export default function PublicLayout({ children }: PropsWithChildren) {
                             >
                                 <Link href={route('login')} onClick={() => setIsMenuOpen(false)}>
                                     <Button variant="outline" className="w-full bg-zinc-900 border-white/10 hover:bg-white hover:text-black transition-all uppercase tracking-widest h-14 rounded-full font-bold">
-                                        Login
+                                        Entrar
                                     </Button>
                                 </Link>
                             </motion.div>

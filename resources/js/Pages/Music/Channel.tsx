@@ -20,7 +20,7 @@ interface Video {
 export default function Channel({ videos }: { videos: Video[] }) {
     return (
         <PublicLayout>
-            <Head title="Channel - Santo Music" />
+            <Head title="Canal" />
 
             {/* Header Content */}
             <div className="relative pt-32 pb-12 px-6 md:px-12 overflow-hidden">
@@ -29,14 +29,10 @@ export default function Channel({ videos }: { videos: Video[] }) {
                 <div className="relative mx-auto max-w-7xl">
                     <BlurFade>
                         <div className="flex flex-col items-center text-center space-y-4 mb-20">
-                            <h2 className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-600">Explore Content</h2>
                             <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter italic text-white flex items-center gap-3">
                                 <Youtube className="size-8 text-red-600" />
-                                SANTO CHANNEL
+                                SANTO CANAL
                             </h1>
-                            <p className="max-w-xl text-zinc-500 text-[10px] md:text-xs uppercase tracking-[0.2em] font-bold leading-relaxed">
-                                Presentaciones en vivo, lanzamientos oficiales y contenido exclusivo.
-                            </p>
                         </div>
                     </BlurFade>
 
@@ -80,7 +76,7 @@ export default function Channel({ videos }: { videos: Video[] }) {
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <span className="text-[8px] font-medium uppercase tracking-widest text-zinc-600 truncate">
-                                                    {video.description || 'Santo Music Official'}
+                                                    {video.description || 'Santo Music Oficial'}
                                                 </span>
                                             </div>
                                         </div>

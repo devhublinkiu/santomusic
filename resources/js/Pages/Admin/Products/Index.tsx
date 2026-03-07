@@ -119,7 +119,7 @@ export default function ProductsIndex({ products }: { products: Product[] }) {
                 </h2>
             }
         >
-            <Head title="Productos - Admin" />
+            <Head title="Admin: Productos" />
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">

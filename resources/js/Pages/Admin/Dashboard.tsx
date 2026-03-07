@@ -58,12 +58,12 @@ export default function Dashboard({ stats, serverInfo }: { stats: Stats, serverI
     ];
 
     const serverMetrics = [
-        { label: "PHP Version", value: serverInfo.php_version, icon: Cpu },
-        { label: "Upload Max", value: serverInfo.upload_max_filesize, icon: HardDrive },
-        { label: "Post Max", value: serverInfo.post_max_size, icon: Zap },
-        { label: "Execution Time", value: serverInfo.max_execution_time, icon: Clock },
-        { label: "Memory Limit", value: serverInfo.memory_limit, icon: Server },
-        { label: "Storage Cloud", value: serverInfo.bunny_status, icon: Cloud, highlight: true },
+        { label: "Versión de PHP", value: serverInfo.php_version, icon: Cpu },
+        { label: "Máx. Subida", value: serverInfo.upload_max_filesize, icon: HardDrive },
+        { label: "Máx. Post", value: serverInfo.post_max_size, icon: Zap },
+        { label: "Tiempo de Ejecución", value: serverInfo.max_execution_time, icon: Clock },
+        { label: "Límite de Memoria", value: serverInfo.memory_limit, icon: Server },
+        { label: "Almacenamiento Cloud", value: serverInfo.bunny_status, icon: Cloud, highlight: true },
     ];
 
     return (
@@ -74,7 +74,7 @@ export default function Dashboard({ stats, serverInfo }: { stats: Stats, serverI
                 </h2>
             }
         >
-            <Head title="Admin Dashboard" />
+            <Head title="Admin: Escritorio" />
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl space-y-8 sm:px-6 lg:px-8">

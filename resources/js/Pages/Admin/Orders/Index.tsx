@@ -81,7 +81,7 @@ export default function OrdersIndex({ orders, filters }: Props) {
         <AppLayout
             header={<h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">Pedidos</h2>}
         >
-            <Head title="Gestión de Pedidos - Admin" />
+            <Head title="Admin: Gestión de Pedidos" />
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">

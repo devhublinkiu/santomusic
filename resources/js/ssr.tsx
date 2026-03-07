@@ -5,6 +5,9 @@ import ReactDOMServer from 'react-dom/server';
 import { RouteName } from 'ziggy-js';
 import { route } from '../../vendor/tightenco/ziggy';
 
+import { MusicProvider } from './Contexts/MusicContext';
+import { CartProvider } from './Contexts/CartContext';
+
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 createServer((page) =>
@@ -27,7 +30,13 @@ createServer((page) =>
                 });
             /* eslint-enable */
 
-            return <App {...props} />;
+            return (
+                <MusicProvider>
+                    <CartProvider>
+                        <App {...props} />
+                    </CartProvider>
+                </MusicProvider>
+            );
         },
     }),
 );

@@ -38,7 +38,7 @@ export default function Index({ albums }: { albums: Album[] }) {
                 </div>
             }
         >
-            <Head title="Admin - Álbumes" />
+            <Head title="Admin: Álbumes" />
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">

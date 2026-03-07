@@ -48,7 +48,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
     const navItems = [
         {
-            title: "Dashboard",
+            title: "Inicio",
             url: route('admin.dashboard'),
             icon: LayoutDashboard,
             isActive: route().current('admin.dashboard'),
@@ -66,7 +66,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             isActive: route().current('admin.access-codes.*'),
         },
         {
-            title: "Shop",
+            title: "Tienda",
             url: route('admin.products.index'),
             icon: Package,
             isActive: route().current('admin.products.*'),

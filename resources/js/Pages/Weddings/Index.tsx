@@ -33,7 +33,7 @@ export default function WeddingIndex({
 
     return (
         <PublicLayout>
-            <Head title="Bodas - Santo Music" />
+            <Head title="Bodas" />
 
             <AccessCodeLock isVerified={isVerified} />
 

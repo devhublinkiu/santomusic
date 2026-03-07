@@ -138,7 +138,7 @@ export default function ProjectsIndex({ projects, accessCodes }: { projects: Pro
                 </h2>
             }
         >
-            <Head title="Proyectos - Admin" />
+            <Head title="Admin: Proyectos" />
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">

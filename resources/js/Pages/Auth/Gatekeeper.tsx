@@ -33,7 +33,7 @@ export default function Gatekeeper({ settings }: GatekeeperProps) {
 
     return (
         <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-zinc-950 font-sans text-zinc-100 selection:bg-indigo-500 selection:text-white">
-            <Head title="Acceso - Santo Music" />
+            <Head title="Acceso" />
 
             {/* Background */}
             <div className="absolute inset-0 z-0">

@@ -18,7 +18,7 @@ interface Album {
 export default function Index({ albums }: { albums: Album[] }) {
     return (
         <PublicLayout>
-            <Head title="Música - Santo Music" />
+            <Head title="Música" />
 
             <div className="py-24 px-6 md:px-12">
                 <div className="mx-auto max-w-7xl">

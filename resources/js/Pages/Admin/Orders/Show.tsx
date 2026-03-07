@@ -83,7 +83,7 @@ export default function OrderShow({ order }: { order: Order }) {
         <AppLayout
             header={<h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">Detalle de Pedido</h2>}
         >
-            <Head title={`Pedido #${order.id} - Admin`} />
+            <Head title={`Admin: Pedido #${order.id}`} />
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8 space-y-8">
