@@ -30,7 +30,9 @@ class ContactMessage extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            from: new Address($this->data['email'], $this->data['name']),
+            // El "from" debe ser un dominio verificado en Resend; usamos el global.
+            // El correo del visitante va en "reply-to" para responderle directamente.
+            replyTo: [new Address($this->data['email'], $this->data['name'])],
             subject: 'Nuevo mensaje de contacto: ' . $this->data['subject'],
         );
     }

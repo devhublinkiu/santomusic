@@ -48,6 +48,8 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureUserIsAdmin::class])->pref
     Route::get('/', [\App\Http\Controllers\Admin\AdminController::class , 'dashboard'])->name('dashboard');
     Route::get('/settings', [\App\Http\Controllers\Admin\SettingsController::class , 'index'])->name('settings.index');
     Route::post('/settings', [\App\Http\Controllers\Admin\SettingsController::class , 'update'])->name('settings.update');
+    Route::get('/menu', [\App\Http\Controllers\Admin\MenuController::class , 'index'])->name('menu.index');
+    Route::post('/menu', [\App\Http\Controllers\Admin\MenuController::class , 'update'])->name('menu.update');
     Route::resource('access-codes', \App\Http\Controllers\Admin\AccessCodeController::class)->except(['create', 'edit', 'show']);
     Route::resource('projects', \App\Http\Controllers\Admin\ProjectController::class)->except(['create', 'edit', 'show']);
     Route::resource('products', \App\Http\Controllers\Admin\ProductController::class)->except(['create', 'edit', 'show']);

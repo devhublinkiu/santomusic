@@ -115,4 +115,16 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Contact Form Recipient
+    |--------------------------------------------------------------------------
+    |
+    | Email address that receives the messages submitted through the public
+    | contact form. Falls back to the global "from" address if unset.
+    |
+    */
+
+    'contact_recipient' => env('CONTACT_RECIPIENT', env('MAIL_FROM_ADDRESS', 'hello@example.com')),
+
 ];

@@ -50,9 +50,11 @@ class SettingsController extends Controller
             'logo_app' => 'nullable|image|max:2048',
             'hero_background' => 'nullable|file|mimes:jpg,jpeg,png,webp,mp4,mov,webm|max:102400', // 100MB max for video
             'whatsapp_number' => 'nullable|string|max:20',
+            'contact_recipient' => 'nullable|email|max:255',
         ]);
 
         $settings->whatsapp_number = $request->whatsapp_number;
+        $settings->contact_recipient = $request->contact_recipient;
 
         foreach (['logo_vertical', 'logo_home', 'app_profile', 'logo_app', 'hero_background'] as $field) {
             if ($request->hasFile($field)) {

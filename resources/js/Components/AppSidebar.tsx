@@ -18,6 +18,7 @@ import {
     ChevronRight,
     CreditCard,
     Package,
+    PanelsTopLeft,
 } from "lucide-react"
 
 import {
@@ -88,6 +89,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             url: route('admin.videos.index'),
             icon: Youtube,
             isActive: route().current('admin.videos.*'),
+        },
+        {
+            title: "Menú",
+            url: route('admin.menu.index'),
+            icon: PanelsTopLeft,
+            isActive: route().current('admin.menu.*'),
         },
         {
             title: "Integraciones",
