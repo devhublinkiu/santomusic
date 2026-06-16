@@ -5,7 +5,7 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Button } from '@/Components/ui/button';
 import { toast } from 'sonner';
-import { Settings, Image as ImageIcon, CheckCircle2, Phone } from 'lucide-react';
+import { Settings, Image as ImageIcon, CheckCircle2, Phone, Mail } from 'lucide-react';
 
 interface SiteSettings {
     logo_vertical: string | null;
@@ -14,6 +14,7 @@ interface SiteSettings {
     logo_app: string | null;
     hero_background: string | null;
     whatsapp_number: string | null;
+    contact_recipient: string | null;
 }
 
 export default function SettingsPage({ settings }: { settings: SiteSettings }) {
@@ -24,6 +25,7 @@ export default function SettingsPage({ settings }: { settings: SiteSettings }) {
         logo_app: null as File | null,
         hero_background: null as File | null,
         whatsapp_number: settings.whatsapp_number || '',
+        contact_recipient: settings.contact_recipient || '',
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -177,6 +179,29 @@ export default function SettingsPage({ settings }: { settings: SiteSettings }) {
                                                 Incluye indicativo de país (sin el +). Ej: 57 para Colombia.
                                             </p>
                                             {errors.whatsapp_number && <p className="text-xs text-red-500">{errors.whatsapp_number}</p>}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="pt-6 border-t border-zinc-100 dark:border-zinc-800">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <Mail className="size-5 text-indigo-500" />
+                                        <h3 className="text-lg font-medium">Notificaciones de Contacto</h3>
+                                    </div>
+                                    <div className="grid gap-6 md:grid-cols-2">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="contact_recipient">Correo que recibe los mensajes</Label>
+                                            <Input
+                                                id="contact_recipient"
+                                                type="email"
+                                                value={data.contact_recipient as string}
+                                                placeholder="contacto@tudominio.com"
+                                                onChange={(e) => setData('contact_recipient', e.target.value)}
+                                            />
+                                            <p className="text-[10px] text-zinc-500 uppercase tracking-widest">
+                                                Dirección donde llegan los mensajes del formulario de contacto. Puede ser de cualquier dominio.
+                                            </p>
+                                            {errors.contact_recipient && <p className="text-xs text-red-500">{errors.contact_recipient}</p>}
                                         </div>
                                     </div>
                                 </div>

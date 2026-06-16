@@ -16,14 +16,18 @@ export default function PublicLayout({ children }: PropsWithChildren) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const { totalItems, setIsOpen } = useCart();
 
+    // Visibilidad de items configurada desde Admin → Menú. Si no hay valor, se muestra.
+    const menuVisibility: Record<string, boolean> = settings?.menu_visibility ?? {};
+    const isVisible = (key?: string) => !key || menuVisibility[key] !== false;
+
     const navItems = [
         { label: 'Inicio', href: '/' },
-        { label: 'Música', href: route('music.index') },
-        { label: 'Canal', href: route('channel.index') },
-        { label: 'Tienda', href: route('shop.index') },
-        { label: 'Bodas', href: route('weddings.index'), icon: '/icons/anillo-de-bodas.png' },
-        { label: 'Contacto', href: route('contact.index') },
-    ];
+        { label: 'Música', href: route('music.index'), key: 'music' },
+        { label: 'Canal', href: route('channel.index'), key: 'channel' },
+        { label: 'Tienda', href: route('shop.index'), key: 'shop' },
+        { label: 'Bodas', href: route('weddings.index'), icon: '/icons/anillo-de-bodas.png', key: 'weddings' },
+        { label: 'Contacto', href: route('contact.index'), key: 'contact' },
+    ].filter((item: any) => isVisible(item.key));
 
     return (
         <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-white selection:text-black">

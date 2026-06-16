@@ -13,9 +13,15 @@ class SiteSetting extends Model
         'logo_app',
         'hero_background',
         'whatsapp_number',
+        'contact_recipient',
         'bold_api_key',
         'bold_environment',
         'youtube_url',
         'youtube_channel_id',
+        'menu_visibility',
+    ];
+
+    protected $casts = [
+        'menu_visibility' => 'array',
     ];
 }
