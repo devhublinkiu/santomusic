@@ -16,6 +16,11 @@ export function uploadToBunny(file: File, auth: TusAuth, onProgress: (pct: numbe
         const upload = new tus.Upload(file, {
             endpoint: auth.endpoint,
             retryDelays: [0, 3000, 5000, 10000, 20000],
+            // Cada subida usa un video nuevo (guid único). Atamos el fingerprint a ese
+            // guid para que tus-js-client NO intente resumir una subida vieja con una
+            // firma ya vencida (causa típica de "se queda colgado / falla").
+            fingerprint: () => Promise.resolve(`bunny-${auth.video_id}`),
+            removeFingerprintOnSuccess: true,
             headers: {
                 AuthorizationSignature: auth.signature,
                 AuthorizationExpire: String(auth.expire),
@@ -23,19 +28,22 @@ export function uploadToBunny(file: File, auth: TusAuth, onProgress: (pct: numbe
                 LibraryId: auth.library_id,
             },
             metadata: {
-                filetype: file.type,
+                filetype: file.type || 'video/mp4',
                 title: file.name,
             },
-            onError: (err) => reject(err),
+            onError: (err: any) => {
+                // Exponemos el error real (status + cuerpo) para poder diagnosticar.
+                const status = err?.originalResponse?.getStatus?.();
+                const body = err?.originalResponse?.getBody?.();
+                const detail = [status ? `HTTP ${status}` : null, body ? String(body).slice(0, 200) : null]
+                    .filter(Boolean)
+                    .join(' — ');
+                reject(new Error(detail ? `Bunny rechazó la subida (${detail})` : (err?.message || 'Fallo la subida a Bunny')));
+            },
             onProgress: (sent, total) => onProgress(Math.round((sent / total) * 100)),
             onSuccess: () => resolve(),
         });
 
-        upload.findPreviousUploads().then((previous) => {
-            if (previous.length) {
-                upload.resumeFromPreviousUpload(previous[0]);
-            }
-            upload.start();
-        });
+        upload.start();
     });
 }

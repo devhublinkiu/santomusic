@@ -11,6 +11,7 @@ class SiteSetting extends Model
         'logo_home',
         'app_profile',
         'logo_app',
+        'favicon',
         'hero_background',
         'whatsapp_number',
         'contact_recipient',

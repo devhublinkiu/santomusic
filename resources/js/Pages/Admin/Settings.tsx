@@ -16,6 +16,7 @@ interface SiteSettings {
     logo_home: string | null;
     app_profile: string | null;
     logo_app: string | null;
+    favicon: string | null;
     hero_background: string | null;
     whatsapp_number: string | null;
     contact_recipient: string | null;
@@ -30,6 +31,7 @@ export default function SettingsPage({ settings, heroHls, heroReady }: { setting
         logo_home: null as File | null,
         app_profile: null as File | null,
         logo_app: null as File | null,
+        favicon: null as File | null,
         hero_background: null as File | null,
         wedding_hero_poster: null as File | null,
         whatsapp_number: settings.whatsapp_number || '',
@@ -72,7 +74,7 @@ export default function SettingsPage({ settings, heroHls, heroReady }: { setting
             setHeroFile(null);
             router.reload({ only: ['settings'] });
         } catch (err: any) {
-            toast.error(err?.response?.data?.message || 'Error al subir el video del hero.');
+            toast.error(err?.response?.data?.message || err?.message || 'Error al subir el video del hero.');
         } finally {
             setHeroUploading(false);
         }
@@ -190,6 +192,27 @@ export default function SettingsPage({ settings, heroHls, heroReady }: { setting
                                                 onChange={(e) => setData('logo_app', e.target.files?.[0] || null)}
                                             />
                                             {errors.logo_app && <p className="text-xs text-red-500">{errors.logo_app}</p>}
+                                        </div>
+                                    </div>
+
+                                    {/* Favicon */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="favicon">Favicon</Label>
+                                        <div className="flex flex-col items-center gap-4 rounded-lg border-2 border-dashed border-zinc-200 p-4 dark:border-zinc-800">
+                                            {settings.favicon && !data.favicon && (
+                                                <img src={settings.favicon} alt="Favicon" className="size-10 object-contain" />
+                                            )}
+                                            <Input
+                                                id="favicon"
+                                                type="file"
+                                                accept=".ico,.png,.svg,image/*"
+                                                className="cursor-pointer"
+                                                onChange={(e) => setData('favicon', e.target.files?.[0] || null)}
+                                            />
+                                            <p className="text-[10px] text-zinc-500 uppercase tracking-widest">
+                                                .ico, .png o .svg — recomendado 32x32 o 64x64px.
+                                            </p>
+                                            {errors.favicon && <p className="text-xs text-red-500">{errors.favicon}</p>}
                                         </div>
                                     </div>
 

@@ -3,9 +3,8 @@ import { PropsWithChildren, useState } from 'react';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { AppFooter } from '@/Components/AppFooter';
 import { Button } from '@/Components/ui/button';
-import { Menu, X, ShoppingBag } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import AudioPlayer from '@/Components/Music/AudioPlayer';
-import { useCart } from '@/Contexts/CartContext';
 import { CartOverlay } from '@/Components/Shop/CartOverlay';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -14,7 +13,6 @@ export default function PublicLayout({ children }: PropsWithChildren) {
     const { site } = usePage().props as any;
     const settings = site?.settings;
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const { totalItems, setIsOpen } = useCart();
 
     // Visibilidad de items configurada desde Admin → Menú. Si no hay valor, se muestra.
     const menuVisibility: Record<string, boolean> = settings?.menu_visibility ?? {};
@@ -78,26 +76,6 @@ export default function PublicLayout({ children }: PropsWithChildren) {
                                 </LinkComponent>
                             );
                         })}
-
-                        {/* Cart Button */}
-                        <button 
-                            onClick={() => setIsOpen(true)}
-                            className="relative p-2 ml-4 hover:bg-white/5 rounded-full transition-colors group"
-                        >
-                            <ShoppingBag className="size-5 text-zinc-400 group-hover:text-white transition-colors" />
-                            <AnimatePresence>
-                                {totalItems > 0 && (
-                                    <motion.span 
-                                        initial={{ scale: 0 }}
-                                        animate={{ scale: 1 }}
-                                        exit={{ scale: 0 }}
-                                        className="absolute -top-1 -right-1 size-4 bg-indigo-500 text-[9px] font-bold flex items-center justify-center rounded-full shadow-lg"
-                                    >
-                                        {totalItems}
-                                    </motion.span>
-                                )}
-                            </AnimatePresence>
-                        </button>
                     </div>
 
                     {/* Mobile Toggle */}

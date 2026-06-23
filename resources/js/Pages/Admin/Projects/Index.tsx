@@ -162,7 +162,7 @@ export default function ProjectsIndex({ projects, accessCodes, groupingMode }: {
             resetCreate();
             router.reload({ only: ['projects'] });
         } catch (err: any) {
-            toast.error(err?.response?.data?.message || 'Error al subir el video.');
+            toast.error(err?.response?.data?.message || err?.message || 'Error al subir el video.');
         } finally {
             setUploading(false);
         }
@@ -215,7 +215,7 @@ export default function ProjectsIndex({ projects, accessCodes, groupingMode }: {
             setReplaceFile(null);
             router.reload({ only: ['projects'] });
         } catch (err: any) {
-            toast.error(err?.response?.data?.message || 'Error al reemplazar el video.');
+            toast.error(err?.response?.data?.message || err?.message || 'Error al reemplazar el video.');
         } finally {
             setReplacing(false);
         }

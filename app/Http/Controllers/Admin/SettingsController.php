@@ -33,6 +33,7 @@ class SettingsController extends Controller
             'logo_home' => 'nullable|image|max:2048',
             'app_profile' => 'nullable|image|max:2048',
             'logo_app' => 'nullable|image|max:2048',
+            'favicon' => 'nullable|file|mimes:ico,png,svg,jpg,jpeg,webp|max:1024',
             'hero_background' => 'nullable|file|mimes:jpg,jpeg,png,webp,mp4,mov,webm|max:102400', // 100MB max for video
             'wedding_hero_poster' => 'nullable|image|max:4096',
             'whatsapp_number' => 'nullable|string|max:20',
@@ -42,7 +43,7 @@ class SettingsController extends Controller
         $settings->whatsapp_number = $request->whatsapp_number;
         $settings->contact_recipient = $request->contact_recipient;
 
-        foreach (['logo_vertical', 'logo_home', 'app_profile', 'logo_app', 'hero_background', 'wedding_hero_poster'] as $field) {
+        foreach (['logo_vertical', 'logo_home', 'app_profile', 'logo_app', 'favicon', 'hero_background', 'wedding_hero_poster'] as $field) {
             if ($request->hasFile($field)) {
                 // Delete old file if exists
                 if ($settings->$field) {
