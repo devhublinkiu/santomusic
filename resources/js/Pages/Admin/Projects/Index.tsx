@@ -1,5 +1,5 @@
 import AppLayout from '@/Layouts/AppLayout';
-import { Head, useForm, router } from '@inertiajs/react';
+import { Head, useForm, router, Link } from '@inertiajs/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
@@ -25,11 +25,13 @@ import {
     SelectValue,
 } from "@/Components/ui/select"
 import { toast } from 'sonner';
-import { FileVideo, Trash2, Plus, Calendar, Edit, Loader2, Link as LinkIcon, UploadCloud, UserCircle, RefreshCw, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
-import { useState } from 'react';
+import { FileVideo, Trash2, Plus, Calendar, Edit, Loader2, Link as LinkIcon, UploadCloud, UserCircle, RefreshCw, CheckCircle2, Clock, AlertCircle, Image as ImageIcon } from 'lucide-react';
+import { useState, useRef } from 'react';
 import { format } from 'date-fns';
 import axios from 'axios';
 import { uploadToBunny, MAX_BYTES } from '@/lib/bunnyUpload';
+import HlsVideo from '@/Components/HlsVideo';
+import { cn } from '@/lib/utils';
 
 interface Project {
     id: number;
@@ -37,6 +39,7 @@ interface Project {
     event_date: string;
     video_guid: string | null;
     video_status: string;
+    hls_url: string | null;
     thumbnail_url: string | null;
     external_url: string | null;
     access_code_id: number | null;
@@ -49,6 +52,17 @@ interface Project {
 interface AccessCode {
     id: number;
     name: string;
+}
+
+interface PageLink {
+    url: string | null;
+    label: string;
+    active: boolean;
+}
+
+interface Paginated<T> {
+    data: T[];
+    links: PageLink[];
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -73,7 +87,7 @@ function StatusBadge({ status }: { status: string }) {
     );
 }
 
-export default function ProjectsIndex({ projects, accessCodes, groupingMode }: { projects: Project[], accessCodes: AccessCode[], groupingMode: string }) {
+export default function ProjectsIndex({ projects, accessCodes, groupingMode }: { projects: Paginated<Project>, accessCodes: AccessCode[], groupingMode: string }) {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [editingProject, setEditingProject] = useState<Project | null>(null);
@@ -87,9 +101,13 @@ export default function ProjectsIndex({ projects, accessCodes, groupingMode }: {
         name: '',
         event_date: '',
         external_url: '',
-        access_code_id: '' as string,
+        access_code_id: 'all' as string,
         video: null as File | null,
     });
+
+    // Scrubber de portada por frame
+    const projectVideoRef = useRef<HTMLVideoElement>(null);
+    const [settingThumb, setSettingThumb] = useState(false);
 
     // Form de edición (solo metadata)
     const {
@@ -112,7 +130,7 @@ export default function ProjectsIndex({ projects, accessCodes, groupingMode }: {
     const [replacePct, setReplacePct] = useState(0);
 
     const resetCreate = () => {
-        setCreateData({ name: '', event_date: '', external_url: '', access_code_id: '', video: null });
+        setCreateData({ name: '', event_date: '', external_url: '', access_code_id: 'all', video: null });
         setUploadPct(0);
     };
 
@@ -157,7 +175,7 @@ export default function ProjectsIndex({ projects, accessCodes, groupingMode }: {
             name: project.name,
             event_date: project.event_date,
             external_url: project.external_url || '',
-            access_code_id: project.access_code_id || '',
+            access_code_id: project.access_code_id ? project.access_code_id.toString() : 'all',
         });
         setReplaceFile(null);
         setReplacePct(0);
@@ -200,6 +218,23 @@ export default function ProjectsIndex({ projects, accessCodes, groupingMode }: {
             toast.error(err?.response?.data?.message || 'Error al reemplazar el video.');
         } finally {
             setReplacing(false);
+        }
+    };
+
+    const setThumbnailFromFrame = async () => {
+        if (!editingProject || !projectVideoRef.current) return;
+        const ms = Math.floor((projectVideoRef.current.currentTime || 0) * 1000);
+        setSettingThumb(true);
+        try {
+            await axios.post(route('admin.projects.thumbnail', editingProject.id), { time_ms: ms });
+            toast.success('Portada actualizada (puede tardar unos segundos en verse).');
+            setIsEditOpen(false);
+            setEditingProject(null);
+            router.reload({ only: ['projects'] });
+        } catch (err: any) {
+            toast.error(err?.response?.data?.message || 'No se pudo cambiar la portada.');
+        } finally {
+            setSettingThumb(false);
         }
     };
 
@@ -315,6 +350,7 @@ export default function ProjectsIndex({ projects, accessCodes, groupingMode }: {
                                                     <SelectValue placeholder="Selecciona un cliente" />
                                                 </SelectTrigger>
                                                 <SelectContent>
+                                                    <SelectItem value="all">Todas las bodas (visible para todos)</SelectItem>
                                                     {accessCodes.map((code) => (
                                                         <SelectItem key={code.id} value={code.id.toString()}>
                                                             {code.name}
@@ -366,8 +402,8 @@ export default function ProjectsIndex({ projects, accessCodes, groupingMode }: {
                                 </DialogContent>
                             </Dialog>
 
-                            <Dialog open={isEditOpen} onOpenChange={(o) => { if (!replacing) setIsEditOpen(o); }}>
-                                <DialogContent className="sm:max-w-md">
+                            <Dialog open={isEditOpen} onOpenChange={(o) => { if (!replacing && !settingThumb) setIsEditOpen(o); }}>
+                                <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
                                     <DialogHeader>
                                         <DialogTitle>Editar Proyecto</DialogTitle>
                                     </DialogHeader>
@@ -402,6 +438,7 @@ export default function ProjectsIndex({ projects, accessCodes, groupingMode }: {
                                                     <SelectValue placeholder="Selecciona un cliente" />
                                                 </SelectTrigger>
                                                 <SelectContent>
+                                                    <SelectItem value="all">Todas las bodas (visible para todos)</SelectItem>
                                                     {accessCodes.map((code) => (
                                                         <SelectItem key={code.id} value={code.id.toString()}>
                                                             {code.name}
@@ -455,6 +492,30 @@ export default function ProjectsIndex({ projects, accessCodes, groupingMode }: {
                                             Subir nuevo video
                                         </Button>
                                     </div>
+
+                                    {/* Portada por frame: solo si el video está listo */}
+                                    {editingProject?.hls_url && editingProject.video_status === 'ready' && (
+                                        <div className="space-y-2 border-t pt-4">
+                                            <Label>Portada (elegir frame)</Label>
+                                            <p className="text-xs text-zinc-500">
+                                                Pausá el video en el momento que quieras y fijalo como portada.
+                                            </p>
+                                            <HlsVideo
+                                                src={editingProject.hls_url}
+                                                videoRef={projectVideoRef}
+                                                className="w-full rounded-lg bg-black aspect-video"
+                                            />
+                                            <Button
+                                                type="button"
+                                                variant="secondary"
+                                                disabled={settingThumb}
+                                                onClick={setThumbnailFromFrame}
+                                            >
+                                                {settingThumb ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ImageIcon className="mr-2 size-4" />}
+                                                Usar este momento como portada
+                                            </Button>
+                                        </div>
+                                    )}
                                 </DialogContent>
                             </Dialog>
 
@@ -472,14 +533,14 @@ export default function ProjectsIndex({ projects, accessCodes, groupingMode }: {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {projects.length === 0 ? (
+                                    {projects.data.length === 0 ? (
                                         <TableRow>
                                             <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                                                 No hay videos subidos.
                                             </TableCell>
                                         </TableRow>
                                     ) : (
-                                        projects.map((project) => (
+                                        projects.data.map((project) => (
                                             <TableRow key={project.id}>
                                                 <TableCell className="font-medium">
                                                     <div className="flex items-center gap-3">
@@ -577,6 +638,34 @@ export default function ProjectsIndex({ projects, accessCodes, groupingMode }: {
                                     )}
                                 </TableBody>
                             </Table>
+
+                            {/* Paginación */}
+                            {projects.links.length > 3 && (
+                                <div className="flex flex-wrap items-center justify-center gap-1 pt-6">
+                                    {projects.links.map((link, i) => (
+                                        link.url ? (
+                                            <Link
+                                                key={i}
+                                                href={link.url}
+                                                preserveScroll
+                                                className={cn(
+                                                    "px-3 py-1.5 rounded-md text-sm transition-colors",
+                                                    link.active
+                                                        ? "bg-indigo-600 text-white"
+                                                        : "text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                                )}
+                                                dangerouslySetInnerHTML={{ __html: link.label }}
+                                            />
+                                        ) : (
+                                            <span
+                                                key={i}
+                                                className="px-3 py-1.5 rounded-md text-sm text-zinc-300 dark:text-zinc-700"
+                                                dangerouslySetInnerHTML={{ __html: link.label }}
+                                            />
+                                        )
+                                    ))}
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </div>

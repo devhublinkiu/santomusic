@@ -24,6 +24,7 @@ class SiteSetting extends Model
         'wedding_hero_video_status',
         'wedding_hero_video_width',
         'wedding_hero_video_height',
+        'wedding_hero_poster_version',
         'menu_visibility',
     ];
 

@@ -11,38 +11,22 @@ use Inertia\Inertia;
 
 class SettingsController extends Controller
 {
-    public function index()
+    public function index(BunnyStreamService $stream)
     {
         $settings = SiteSetting::first() ?? new SiteSetting();
+        $heroReady = $settings->wedding_hero_video_guid
+            && $settings->wedding_hero_video_status === 'ready';
+
         return Inertia::render('Admin/Settings', [
-            'settings' => $settings
+            'settings' => $settings,
+            'heroHls' => $heroReady ? $stream->hlsUrl($settings->wedding_hero_video_guid) : null,
+            'heroReady' => (bool) $heroReady,
         ]);
     }
 
     public function update(Request $request)
     {
         $settings = SiteSetting::first() ?? new SiteSetting();
-        // DEBUG: Logging upload details & Runtime Config
-        \Illuminate\Support\Facades\Log::info('Runtime Config:', [
-            'php_ini' => php_ini_loaded_file(),
-            'upload_max_filesize' => ini_get('upload_max_filesize'),
-            'post_max_size' => ini_get('post_max_size'),
-        ]);
-
-        if ($request->hasFile('hero_background')) {
-            $file = $request->file('hero_background');
-            \Illuminate\Support\Facades\Log::info('File Detected (Valid):', [
-                'name' => $file->getClientOriginalName(),
-                'size' => $file->getSize(),
-                'mime' => $file->getMimeType(),
-            ]);
-        }
-        else {
-            // Check raw $_FILES to see if it exists but with error
-            \Illuminate\Support\Facades\Log::info('No Valid File detected via Request.');
-            \Illuminate\Support\Facades\Log::info('Raw $_FILES:', $_FILES);
-            \Illuminate\Support\Facades\Log::info('Raw $_POST Keys:', array_keys($_POST));
-        }
 
         $data = $request->validate([
             'logo_vertical' => 'nullable|image|max:2048',
@@ -104,6 +88,28 @@ class SettingsController extends Controller
         return response()->json([
             'upload' => $stream->tusUploadAuth($guid),
         ]);
+    }
+
+    /**
+     * Fija un frame del video del hero como portada (override del thumbnail).
+     */
+    public function heroThumbnail(Request $request, BunnyStreamService $stream)
+    {
+        $request->validate(['time_ms' => 'required|integer|min:0']);
+
+        $settings = SiteSetting::first();
+        if (! $settings || ! $settings->wedding_hero_video_guid || $settings->wedding_hero_video_status !== 'ready') {
+            return response()->json(['message' => 'El video del hero todavía no está listo.'], 422);
+        }
+
+        if (! $stream->setThumbnailTime($settings->wedding_hero_video_guid, (int) $request->time_ms)) {
+            return response()->json(['message' => 'Bunny no aceptó el cambio de portada.'], 422);
+        }
+
+        $settings->wedding_hero_poster_version = (int) ($settings->wedding_hero_poster_version ?? 0) + 1;
+        $settings->save();
+
+        return response()->json(['ok' => true]);
     }
 
     /**

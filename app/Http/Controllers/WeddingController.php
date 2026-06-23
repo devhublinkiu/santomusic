@@ -16,19 +16,30 @@ class WeddingController extends Controller
         $accessCodeId = session('access_code_id');
         $settings = SiteSetting::first();
 
-        // Hero global (independiente del código de acceso). Se muestra solo si tiene portada.
+        // Hero global (independiente del código de acceso).
+        // Portada: imagen subida tiene prioridad; si no hay, se usa el frame elegido del video.
         $hero = null;
-        if ($settings && $settings->wedding_hero_poster) {
+        if ($settings) {
             $videoReady = $settings->wedding_hero_video_guid
                 && $settings->wedding_hero_video_status === 'ready';
 
-            $hero = [
-                'poster' => $settings->wedding_hero_poster,
-                'hls_url' => $videoReady ? $stream->hlsUrl($settings->wedding_hero_video_guid) : null,
-                'width' => $settings->wedding_hero_video_width,
-                'height' => $settings->wedding_hero_video_height,
-                'ready' => (bool) $videoReady,
-            ];
+            $poster = $settings->wedding_hero_poster;
+            if (! $poster && $videoReady) {
+                $poster = $stream->thumbnailUrl($settings->wedding_hero_video_guid);
+                if ($settings->wedding_hero_poster_version) {
+                    $poster .= '?v=' . $settings->wedding_hero_poster_version;
+                }
+            }
+
+            if ($poster) {
+                $hero = [
+                    'poster' => $poster,
+                    'hls_url' => $videoReady ? $stream->hlsUrl($settings->wedding_hero_video_guid) : null,
+                    'width' => $settings->wedding_hero_video_width,
+                    'height' => $settings->wedding_hero_video_height,
+                    'ready' => (bool) $videoReady,
+                ];
+            }
         }
 
         $projectsByGroup = [];

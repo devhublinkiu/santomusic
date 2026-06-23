@@ -96,6 +96,22 @@ class BunnyStreamService
         ])->delete("{$this->base}/library/{$this->libraryId}/videos/{$guid}");
     }
 
+    /**
+     * Fija el frame de portada del video (Update Video → thumbnailTime en ms).
+     * Bunny regenera el thumbnail.jpg desde ese momento.
+     */
+    public function setThumbnailTime(string $guid, int $ms): bool
+    {
+        $response = Http::withHeaders([
+            'AccessKey' => $this->apiKey,
+            'Content-Type' => 'application/json',
+        ])->post("{$this->base}/library/{$this->libraryId}/videos/{$guid}", [
+            'thumbnailTime' => $ms,
+        ]);
+
+        return $response->successful();
+    }
+
     public function hlsUrl(string $guid): string
     {
         return "https://{$this->cdnHostname}/{$guid}/playlist.m3u8";

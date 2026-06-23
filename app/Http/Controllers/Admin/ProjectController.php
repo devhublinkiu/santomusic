@@ -14,14 +14,20 @@ class ProjectController extends Controller
 {
     public function index(BunnyStreamService $stream)
     {
-        $projects = Project::with('accessCode')->latest()->get()->map(function ($project) use ($stream) {
+        $projects = Project::with('accessCode')->latest()->paginate(10)->through(function ($project) use ($stream) {
+            $poster = $project->video_guid ? $stream->thumbnailUrl($project->video_guid) : null;
+            if ($poster && $project->poster_version) {
+                $poster .= '?v=' . $project->poster_version; // cache-busting del frame elegido
+            }
+
             return [
                 'id' => $project->id,
                 'name' => $project->name,
                 'event_date' => $project->event_date->format('Y-m-d'),
                 'video_guid' => $project->video_guid,
                 'video_status' => $project->video_status,
-                'thumbnail_url' => $project->video_guid ? $stream->thumbnailUrl($project->video_guid) : null,
+                'hls_url' => ($project->video_guid && $project->video_status === 'ready') ? $stream->hlsUrl($project->video_guid) : null,
+                'thumbnail_url' => $poster,
                 'external_url' => $project->external_url,
                 'access_code_id' => $project->access_code_id,
                 'access_code' => $project->accessCode ? ['name' => $project->accessCode->name] : null,
@@ -45,6 +51,8 @@ class ProjectController extends Controller
      */
     public function store(Request $request, BunnyStreamService $stream)
     {
+        $this->normalizeAccessCode($request);
+
         $request->validate([
             'name' => 'required|string|max:255',
             'event_date' => 'required|date',
@@ -78,6 +86,8 @@ class ProjectController extends Controller
      */
     public function update(Request $request, Project $project)
     {
+        $this->normalizeAccessCode($request);
+
         $request->validate([
             'name' => 'required|string|max:255',
             'event_date' => 'required|date',
@@ -158,6 +168,40 @@ class ProjectController extends Controller
         $settings->save();
 
         return back()->with('success', 'Modo de agrupado actualizado.');
+    }
+
+    /**
+     * Fija un frame del video como portada (override del thumbnail automático).
+     */
+    public function setThumbnail(Request $request, Project $project, BunnyStreamService $stream)
+    {
+        $request->validate(['time_ms' => 'required|integer|min:0']);
+
+        if (! $project->video_guid || $project->video_status !== 'ready') {
+            return response()->json(['message' => 'El video todavía no está listo.'], 422);
+        }
+
+        if (! $stream->setThumbnailTime($project->video_guid, (int) $request->time_ms)) {
+            return response()->json(['message' => 'Bunny no aceptó el cambio de portada.'], 422);
+        }
+
+        $project->update([
+            'thumbnail_time' => (int) $request->time_ms,
+            'poster_version' => (int) ($project->poster_version ?? 0) + 1,
+        ]);
+
+        return response()->json(['ok' => true, 'poster_version' => $project->poster_version]);
+    }
+
+    /**
+     * 'all' / '' en el selector de cliente significan "visible para todas las bodas" (null).
+     */
+    private function normalizeAccessCode(Request $request): void
+    {
+        $raw = $request->input('access_code_id');
+        $request->merge([
+            'access_code_id' => ($raw === 'all' || $raw === '') ? null : $raw,
+        ]);
     }
 
     public function destroy(Project $project, BunnyStreamService $stream)

@@ -6,9 +6,10 @@ import { Label } from '@/Components/ui/label';
 import { Button } from '@/Components/ui/button';
 import { toast } from 'sonner';
 import { Settings, Image as ImageIcon, CheckCircle2, Phone, Mail, Film, RefreshCw, Clock, AlertCircle, Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import axios from 'axios';
 import { uploadToBunny, MAX_BYTES } from '@/lib/bunnyUpload';
+import HlsVideo from '@/Components/HlsVideo';
 
 interface SiteSettings {
     logo_vertical: string | null;
@@ -23,7 +24,7 @@ interface SiteSettings {
     wedding_hero_video_status: string | null;
 }
 
-export default function SettingsPage({ settings }: { settings: SiteSettings }) {
+export default function SettingsPage({ settings, heroHls, heroReady }: { settings: SiteSettings, heroHls: string | null, heroReady: boolean }) {
     const { data, setData, post, processing, errors, recentlySuccessful } = useForm({
         logo_vertical: null as File | null,
         logo_home: null as File | null,
@@ -39,6 +40,10 @@ export default function SettingsPage({ settings }: { settings: SiteSettings }) {
     const [heroFile, setHeroFile] = useState<File | null>(null);
     const [heroUploading, setHeroUploading] = useState(false);
     const [heroPct, setHeroPct] = useState(0);
+
+    // Scrubber de portada del hero por frame
+    const heroVideoRef = useRef<HTMLVideoElement>(null);
+    const [settingHeroThumb, setSettingHeroThumb] = useState(false);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -78,6 +83,21 @@ export default function SettingsPage({ settings }: { settings: SiteSettings }) {
             preserveScroll: true,
             onSuccess: () => toast.success('Estado del hero actualizado'),
         });
+    };
+
+    const handleHeroThumbnail = async () => {
+        if (!heroVideoRef.current) return;
+        const ms = Math.floor((heroVideoRef.current.currentTime || 0) * 1000);
+        setSettingHeroThumb(true);
+        try {
+            await axios.post(route('admin.settings.hero-thumbnail'), { time_ms: ms });
+            toast.success('Portada del hero actualizada (puede tardar unos segundos en verse).');
+            router.reload({ only: ['settings'] });
+        } catch (err: any) {
+            toast.error(err?.response?.data?.message || 'No se pudo cambiar la portada del hero.');
+        } finally {
+            setSettingHeroThumb(false);
+        }
     };
 
     return (
@@ -208,7 +228,7 @@ export default function SettingsPage({ settings }: { settings: SiteSettings }) {
                                         <h3 className="text-lg font-medium">Hero de Bodas</h3>
                                     </div>
                                     <p className="text-xs text-zinc-500 mb-4">
-                                        Portada y video destacado que aparece arriba en la página pública de bodas. Si no hay video listo, el hero no se muestra.
+                                        Portada y video destacado que aparece arriba en la página pública de bodas. Se muestra cuando el video está <strong>«Listo»</strong> o cuando subís una <strong>imagen de portada</strong> (la imagen tiene prioridad). Mientras el video esté «Procesando», el hero no aparece todavía.
                                     </p>
 
                                     <div className="grid gap-6 md:grid-cols-2">
@@ -275,6 +295,27 @@ export default function SettingsPage({ settings }: { settings: SiteSettings }) {
                                             </div>
                                         </div>
                                     </div>
+
+                                    {/* Portada del hero por frame (si el video está listo) */}
+                                    {heroReady && heroHls && (
+                                        <div className="mt-6 space-y-2">
+                                            <Label>Portada del hero (elegir frame)</Label>
+                                            <p className="text-xs text-zinc-500">
+                                                Pausá el video en el momento que quieras y fijalo como portada. Si subiste una imagen arriba, esa tiene prioridad.
+                                            </p>
+                                            <HlsVideo
+                                                src={heroHls}
+                                                videoRef={heroVideoRef}
+                                                className="w-full max-w-lg rounded-lg bg-black aspect-video"
+                                            />
+                                            <div>
+                                                <Button type="button" variant="secondary" disabled={settingHeroThumb} onClick={handleHeroThumbnail}>
+                                                    {settingHeroThumb ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ImageIcon className="mr-2 size-4" />}
+                                                    Usar este momento como portada
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="pt-6 border-t border-zinc-100 dark:border-zinc-800">

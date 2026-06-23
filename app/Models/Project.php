@@ -14,6 +14,8 @@ class Project extends Model
         'video_status',
         'video_width',
         'video_height',
+        'thumbnail_time',
+        'poster_version',
         'external_url',
         'access_code_id',
     ];
@@ -22,6 +24,8 @@ class Project extends Model
         'event_date' => 'date',
         'video_width' => 'integer',
         'video_height' => 'integer',
+        'thumbnail_time' => 'integer',
+        'poster_version' => 'integer',
     ];
 
     public function accessCode()
