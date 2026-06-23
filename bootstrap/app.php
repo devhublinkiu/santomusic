@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->validateCsrfTokens(except: [
             '/payments/webhook',
+            '/webhooks/bunny-stream',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

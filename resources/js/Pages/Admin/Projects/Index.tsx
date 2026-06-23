@@ -25,20 +25,24 @@ import {
     SelectValue,
 } from "@/Components/ui/select"
 import { toast } from 'sonner';
-import { FileVideo, Trash2, Plus, Calendar, Edit, Loader2, Link as LinkIcon, UploadCloud, UserCircle } from 'lucide-react';
+import { FileVideo, Trash2, Plus, Calendar, Edit, Loader2, Link as LinkIcon, UploadCloud, UserCircle, RefreshCw, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
 import { useState } from 'react';
 import { format } from 'date-fns';
+import axios from 'axios';
+import { uploadToBunny, MAX_BYTES } from '@/lib/bunnyUpload';
 
 interface Project {
     id: number;
     name: string;
     event_date: string;
-    video_path: string;
+    video_guid: string | null;
+    video_status: string;
+    thumbnail_url: string | null;
     external_url: string | null;
     access_code_id: number | null;
     access_code?: {
         name: string;
-    };
+    } | null;
     created_at: string;
 }
 
@@ -47,50 +51,103 @@ interface AccessCode {
     name: string;
 }
 
-export default function ProjectsIndex({ projects, accessCodes }: { projects: Project[], accessCodes: AccessCode[] }) {
+function StatusBadge({ status }: { status: string }) {
+    if (status === 'ready') {
+        return (
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                <CheckCircle2 className="size-3" /> Listo
+            </span>
+        );
+    }
+    if (status === 'error') {
+        return (
+            <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-2 py-0.5 text-xs font-medium text-red-600 dark:text-red-400">
+                <AlertCircle className="size-3" /> Error
+            </span>
+        );
+    }
+    return (
+        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-600 dark:text-amber-400">
+            <Clock className="size-3 animate-pulse" /> Procesando…
+        </span>
+    );
+}
+
+export default function ProjectsIndex({ projects, accessCodes, groupingMode }: { projects: Project[], accessCodes: AccessCode[], groupingMode: string }) {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [editingProject, setEditingProject] = useState<Project | null>(null);
 
-    // Form for Creating
-    const { data, setData, post, processing, errors, reset, progress } = useForm({
+    // Subida directa (TUS)
+    const [uploading, setUploading] = useState(false);
+    const [uploadPct, setUploadPct] = useState(0);
+
+    // Form de creación (metadata + archivo)
+    const [createData, setCreateData] = useState({
         name: '',
         event_date: '',
-        video: null as File | null,
         external_url: '',
-        access_code_id: '' as string | number,
+        access_code_id: '' as string,
+        video: null as File | null,
     });
 
-    // Form for Editing
+    // Form de edición (solo metadata)
     const {
         data: editData,
         setData: setEditData,
         post: postEdit,
         processing: processingEdit,
-        errors: errorsEdit,
         reset: resetEdit,
-        progress: progressEdit
     } = useForm({
         _method: 'PUT',
         name: '',
         event_date: '',
-        video: null as File | null,
         external_url: '',
         access_code_id: '' as string | number,
     });
 
-    const handleCreate = (e: React.FormEvent) => {
+    // Reemplazo de video en edición
+    const [replaceFile, setReplaceFile] = useState<File | null>(null);
+    const [replacing, setReplacing] = useState(false);
+    const [replacePct, setReplacePct] = useState(0);
+
+    const resetCreate = () => {
+        setCreateData({ name: '', event_date: '', external_url: '', access_code_id: '', video: null });
+        setUploadPct(0);
+    };
+
+    const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
-        post(route('admin.projects.store'), {
-            onSuccess: () => {
-                setIsCreateOpen(false);
-                reset();
-                toast.success('Proyecto creado correctamente');
-            },
-            onError: () => {
-                toast.error('Error al subir el proyecto. Verifica el tamaño del archivo.');
-            }
-        });
+        if (!createData.video) {
+            toast.error('Selecciona un archivo de video.');
+            return;
+        }
+        if (createData.video.size > MAX_BYTES) {
+            toast.error('El video supera el límite de 5GB.');
+            return;
+        }
+
+        setUploading(true);
+        setUploadPct(0);
+        try {
+            const { data } = await axios.post(route('admin.projects.store'), {
+                name: createData.name,
+                event_date: createData.event_date,
+                external_url: createData.external_url,
+                access_code_id: createData.access_code_id || null,
+            });
+
+            await uploadToBunny(createData.video, data.upload, setUploadPct);
+
+            toast.success('Video subido. Bunny lo está procesando.');
+            setIsCreateOpen(false);
+            resetCreate();
+            router.reload({ only: ['projects'] });
+        } catch (err: any) {
+            toast.error(err?.response?.data?.message || 'Error al subir el video.');
+        } finally {
+            setUploading(false);
+        }
     };
 
     const openEdit = (project: Project) => {
@@ -99,10 +156,11 @@ export default function ProjectsIndex({ projects, accessCodes }: { projects: Pro
             _method: 'PUT',
             name: project.name,
             event_date: project.event_date,
-            video: null,
             external_url: project.external_url || '',
             access_code_id: project.access_code_id || '',
         });
+        setReplaceFile(null);
+        setReplacePct(0);
         setIsEditOpen(true);
     };
 
@@ -117,9 +175,46 @@ export default function ProjectsIndex({ projects, accessCodes }: { projects: Pro
                 setEditingProject(null);
                 toast.success('Proyecto actualizado correctamente');
             },
-            onError: () => {
-                toast.error('Error al actualizar.');
-            }
+            onError: () => toast.error('Error al actualizar.'),
+        });
+    };
+
+    const handleReplaceVideo = async () => {
+        if (!editingProject || !replaceFile) return;
+        if (replaceFile.size > MAX_BYTES) {
+            toast.error('El video supera el límite de 5GB.');
+            return;
+        }
+
+        setReplacing(true);
+        setReplacePct(0);
+        try {
+            const { data } = await axios.post(route('admin.projects.video', editingProject.id));
+            await uploadToBunny(replaceFile, data.upload, setReplacePct);
+            toast.success('Nuevo video subido. Bunny lo está procesando.');
+            setIsEditOpen(false);
+            setEditingProject(null);
+            setReplaceFile(null);
+            router.reload({ only: ['projects'] });
+        } catch (err: any) {
+            toast.error(err?.response?.data?.message || 'Error al reemplazar el video.');
+        } finally {
+            setReplacing(false);
+        }
+    };
+
+    const refreshStatus = (projectId: number) => {
+        router.post(route('admin.projects.refresh', projectId), {}, {
+            preserveScroll: true,
+            onSuccess: () => toast.success('Estado actualizado'),
+            onError: () => toast.error('No se pudo actualizar el estado'),
+        });
+    };
+
+    const changeGrouping = (mode: string) => {
+        router.post(route('admin.projects.grouping'), { mode }, {
+            preserveScroll: true,
+            onSuccess: () => toast.success(`Vista pública agrupada por ${mode === 'year' ? 'año' : 'mes'}`),
         });
     };
 
@@ -142,6 +237,27 @@ export default function ProjectsIndex({ projects, accessCodes }: { projects: Pro
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
+                    {/* Configuración de la vista pública */}
+                    <Card className="border-none shadow-premium dark:bg-zinc-900/50 dark:backdrop-blur-xl">
+                        <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <CardTitle className="text-base">Organización de la vista pública</CardTitle>
+                                <CardDescription>
+                                    Define cómo se agrupan los videos en la página de bodas. Dentro de cada grupo se ordenan del más nuevo al más viejo.
+                                </CardDescription>
+                            </div>
+                            <Select value={groupingMode} onValueChange={changeGrouping}>
+                                <SelectTrigger className="w-full sm:w-48">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="month">Agrupar por Mes</SelectItem>
+                                    <SelectItem value="year">Agrupar por Año</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </CardHeader>
+                    </Card>
+
                     <Card className="border-none shadow-premium dark:bg-zinc-900/50 dark:backdrop-blur-xl">
                         <CardHeader className="flex flex-row items-center justify-between">
                             <div>
@@ -150,11 +266,11 @@ export default function ProjectsIndex({ projects, accessCodes }: { projects: Pro
                                     Galería de Videos
                                 </CardTitle>
                                 <CardDescription>
-                                    Carga los videos de las bodas. Se subirán automáticamente a la nube.
+                                    Los videos se suben directo a Bunny Stream y se reproducen con streaming adaptativo.
                                 </CardDescription>
                             </div>
 
-                            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                            <Dialog open={isCreateOpen} onOpenChange={(o) => { if (!uploading) { setIsCreateOpen(o); if (!o) resetCreate(); } }}>
                                 <DialogTrigger asChild>
                                     <Button className="bg-indigo-600 text-white hover:bg-indigo-700">
                                         <Plus className="mr-2 size-4" /> Nuevo Proyecto
@@ -164,7 +280,7 @@ export default function ProjectsIndex({ projects, accessCodes }: { projects: Pro
                                     <DialogHeader>
                                         <DialogTitle>Subir Nuevo Video</DialogTitle>
                                         <DialogDescription>
-                                            Sube el archivo de video. Puede tardar unos minutos dependiendo del peso.
+                                            El archivo se sube directo a la nube. Luego Bunny lo procesa (puede tardar unos minutos).
                                         </DialogDescription>
                                     </DialogHeader>
                                     <form onSubmit={handleCreate} className="space-y-4">
@@ -173,29 +289,27 @@ export default function ProjectsIndex({ projects, accessCodes }: { projects: Pro
                                             <Input
                                                 id="name"
                                                 placeholder="Ej: Boda Juan y Ana"
-                                                value={data.name}
-                                                onChange={(e) => setData('name', e.target.value)}
+                                                value={createData.name}
+                                                onChange={(e) => setCreateData({ ...createData, name: e.target.value })}
                                                 required
                                             />
-                                            {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="event_date">Fecha del Evento</Label>
                                             <Input
                                                 id="event_date"
                                                 type="date"
-                                                value={data.event_date}
-                                                onChange={(e) => setData('event_date', e.target.value)}
+                                                value={createData.event_date}
+                                                onChange={(e) => setCreateData({ ...createData, event_date: e.target.value })}
                                                 required
                                             />
-                                            {errors.event_date && <p className="text-xs text-red-500">{errors.event_date}</p>}
                                         </div>
 
                                         <div className="space-y-2">
                                             <Label htmlFor="access_code_id">Cliente / Boda (Código de Acceso)</Label>
                                             <Select
-                                                value={data.access_code_id.toString()}
-                                                onValueChange={(val) => setData('access_code_id', val)}
+                                                value={createData.access_code_id}
+                                                onValueChange={(val) => setCreateData({ ...createData, access_code_id: val })}
                                             >
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="Selecciona un cliente" />
@@ -208,7 +322,6 @@ export default function ProjectsIndex({ projects, accessCodes }: { projects: Pro
                                                     ))}
                                                 </SelectContent>
                                             </Select>
-                                            {errors.access_code_id && <p className="text-xs text-red-500">{errors.access_code_id}</p>}
                                         </div>
 
                                         <div className="space-y-2">
@@ -216,8 +329,8 @@ export default function ProjectsIndex({ projects, accessCodes }: { projects: Pro
                                             <Input
                                                 id="external_url"
                                                 placeholder="https://..."
-                                                value={data.external_url}
-                                                onChange={(e) => setData('external_url', e.target.value)}
+                                                value={createData.external_url}
+                                                onChange={(e) => setCreateData({ ...createData, external_url: e.target.value })}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -229,29 +342,31 @@ export default function ProjectsIndex({ projects, accessCodes }: { projects: Pro
                                                     type="file"
                                                     accept="video/*"
                                                     className="border-0 bg-transparent p-0 file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
-                                                    onChange={(e) => setData('video', e.target.files ? e.target.files[0] : null)}
+                                                    onChange={(e) => setCreateData({ ...createData, video: e.target.files ? e.target.files[0] : null })}
                                                     required
                                                 />
                                             </div>
-                                            {progress && (
-                                                <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
-                                                    <div className="h-full bg-indigo-500 transition-all duration-300" style={{ width: `${progress.percentage}%` }} />
+                                            {uploading && (
+                                                <div className="space-y-1">
+                                                    <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+                                                        <div className="h-full bg-indigo-500 transition-all duration-300" style={{ width: `${uploadPct}%` }} />
+                                                    </div>
+                                                    <p className="text-xs text-zinc-500">Subiendo… {uploadPct}%</p>
                                                 </div>
                                             )}
-                                            {errors.video && <p className="text-xs text-red-500">{errors.video}</p>}
                                         </div>
 
                                         <DialogFooter>
-                                            <Button type="submit" disabled={processing}>
-                                                {processing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                                {processing ? 'Subiendo...' : 'Publicar'}
+                                            <Button type="submit" disabled={uploading}>
+                                                {uploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                                {uploading ? 'Subiendo...' : 'Publicar'}
                                             </Button>
                                         </DialogFooter>
                                     </form>
                                 </DialogContent>
                             </Dialog>
 
-                            <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+                            <Dialog open={isEditOpen} onOpenChange={(o) => { if (!replacing) setIsEditOpen(o); }}>
                                 <DialogContent className="sm:max-w-md">
                                     <DialogHeader>
                                         <DialogTitle>Editar Proyecto</DialogTitle>
@@ -304,20 +419,7 @@ export default function ProjectsIndex({ projects, accessCodes }: { projects: Pro
                                                 onChange={(e) => setEditData('external_url', e.target.value)}
                                             />
                                         </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="edit-video">Reemplazar Video (Opcional)</Label>
-                                            <Input
-                                                id="edit-video"
-                                                type="file"
-                                                accept="video/*"
-                                                onChange={(e) => setEditData('video', e.target.files ? e.target.files[0] : null)}
-                                            />
-                                            {progressEdit && (
-                                                <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
-                                                    <div className="h-full bg-indigo-500 transition-all duration-300" style={{ width: `${progressEdit.percentage}%` }} />
-                                                </div>
-                                            )}
-                                        </div>
+
                                         <DialogFooter>
                                             <Button type="submit" disabled={processingEdit}>
                                                 {processingEdit && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -325,6 +427,34 @@ export default function ProjectsIndex({ projects, accessCodes }: { projects: Pro
                                             </Button>
                                         </DialogFooter>
                                     </form>
+
+                                    {/* Reemplazo de video (flujo aparte, sube directo a Bunny) */}
+                                    <div className="space-y-2 border-t pt-4">
+                                        <Label htmlFor="replace-video">Reemplazar Video (Opcional)</Label>
+                                        <Input
+                                            id="replace-video"
+                                            type="file"
+                                            accept="video/*"
+                                            onChange={(e) => setReplaceFile(e.target.files ? e.target.files[0] : null)}
+                                        />
+                                        {replacing && (
+                                            <div className="space-y-1">
+                                                <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+                                                    <div className="h-full bg-indigo-500 transition-all duration-300" style={{ width: `${replacePct}%` }} />
+                                                </div>
+                                                <p className="text-xs text-zinc-500">Subiendo… {replacePct}%</p>
+                                            </div>
+                                        )}
+                                        <Button
+                                            type="button"
+                                            variant="secondary"
+                                            disabled={!replaceFile || replacing}
+                                            onClick={handleReplaceVideo}
+                                        >
+                                            {replacing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                            Subir nuevo video
+                                        </Button>
+                                    </div>
                                 </DialogContent>
                             </Dialog>
 
@@ -336,6 +466,7 @@ export default function ProjectsIndex({ projects, accessCodes }: { projects: Pro
                                         <TableHead>Nombre / Evento</TableHead>
                                         <TableHead>Cliente / Boda</TableHead>
                                         <TableHead>Fecha</TableHead>
+                                        <TableHead>Estado</TableHead>
                                         <TableHead>Link Externo</TableHead>
                                         <TableHead className="text-right">Acciones</TableHead>
                                     </TableRow>
@@ -343,7 +474,7 @@ export default function ProjectsIndex({ projects, accessCodes }: { projects: Pro
                                 <TableBody>
                                     {projects.length === 0 ? (
                                         <TableRow>
-                                            <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                                            <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                                                 No hay videos subidos.
                                             </TableCell>
                                         </TableRow>
@@ -351,9 +482,15 @@ export default function ProjectsIndex({ projects, accessCodes }: { projects: Pro
                                         projects.map((project) => (
                                             <TableRow key={project.id}>
                                                 <TableCell className="font-medium">
-                                                    <div className="flex flex-col">
+                                                    <div className="flex items-center gap-3">
+                                                        {project.thumbnail_url && project.video_status === 'ready' ? (
+                                                            <img src={project.thumbnail_url} alt={project.name} className="h-10 w-16 rounded object-cover bg-black" />
+                                                        ) : (
+                                                            <div className="flex h-10 w-16 items-center justify-center rounded bg-zinc-100 dark:bg-zinc-800">
+                                                                <FileVideo className="size-4 text-zinc-400" />
+                                                            </div>
+                                                        )}
                                                         <span>{project.name}</span>
-                                                        <span className="text-[10px] text-zinc-500 font-mono truncate max-w-[200px]">{project.video_path}</span>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
@@ -367,6 +504,22 @@ export default function ProjectsIndex({ projects, accessCodes }: { projects: Pro
                                                         <Calendar className="size-3" />
                                                         {format(new Date(project.event_date), 'dd/MM/yyyy')}
                                                     </span>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-2">
+                                                        <StatusBadge status={project.video_status} />
+                                                        {project.video_status !== 'ready' && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="size-7"
+                                                                title="Refrescar estado"
+                                                                onClick={() => refreshStatus(project.id)}
+                                                            >
+                                                                <RefreshCw className="size-3.5 text-zinc-500" />
+                                                            </Button>
+                                                        )}
+                                                    </div>
                                                 </TableCell>
                                                 <TableCell>
                                                     {project.external_url ? (
@@ -402,7 +555,7 @@ export default function ProjectsIndex({ projects, accessCodes }: { projects: Pro
                                                                 <AlertDialogHeader>
                                                                     <AlertDialogTitle>¿Eliminar proyecto?</AlertDialogTitle>
                                                                     <AlertDialogDescription>
-                                                                        Esto eliminará permanentemente el video del almacenamiento y la base de datos.
+                                                                        Esto eliminará permanentemente el video de la nube y la base de datos.
                                                                     </AlertDialogDescription>
                                                                 </AlertDialogHeader>
                                                                 <AlertDialogFooter>

@@ -18,6 +18,12 @@ class SiteSetting extends Model
         'bold_environment',
         'youtube_url',
         'youtube_channel_id',
+        'weddings_grouping_mode',
+        'wedding_hero_poster',
+        'wedding_hero_video_guid',
+        'wedding_hero_video_status',
+        'wedding_hero_video_width',
+        'wedding_hero_video_height',
         'menu_visibility',
     ];
 

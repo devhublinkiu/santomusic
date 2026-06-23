@@ -30,6 +30,7 @@ Route::get('/checkout/success', function () {
     return Inertia::render('Shop/Success');
 })->name('checkout.success');
 Route::post('/payments/webhook', [\App\Http\Controllers\Shop\PaymentWebhookController::class, 'handle'])->name('api.payments.webhook');
+Route::post('/webhooks/bunny-stream', [\App\Http\Controllers\BunnyStreamWebhookController::class, 'handle'])->name('webhooks.bunny-stream');
 
 Route::get('/dashboard', function () {
     if (auth()->user()->is_admin) {
@@ -48,9 +49,14 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureUserIsAdmin::class])->pref
     Route::get('/', [\App\Http\Controllers\Admin\AdminController::class , 'dashboard'])->name('dashboard');
     Route::get('/settings', [\App\Http\Controllers\Admin\SettingsController::class , 'index'])->name('settings.index');
     Route::post('/settings', [\App\Http\Controllers\Admin\SettingsController::class , 'update'])->name('settings.update');
+    Route::post('/settings/hero-video', [\App\Http\Controllers\Admin\SettingsController::class , 'heroVideo'])->name('settings.hero-video');
+    Route::post('/settings/hero-video/refresh', [\App\Http\Controllers\Admin\SettingsController::class , 'refreshHeroStatus'])->name('settings.hero-refresh');
     Route::get('/menu', [\App\Http\Controllers\Admin\MenuController::class , 'index'])->name('menu.index');
     Route::post('/menu', [\App\Http\Controllers\Admin\MenuController::class , 'update'])->name('menu.update');
     Route::resource('access-codes', \App\Http\Controllers\Admin\AccessCodeController::class)->except(['create', 'edit', 'show']);
+    Route::post('projects/grouping', [\App\Http\Controllers\Admin\ProjectController::class, 'updateGrouping'])->name('projects.grouping');
+    Route::post('projects/{project}/video', [\App\Http\Controllers\Admin\ProjectController::class, 'replaceVideo'])->name('projects.video');
+    Route::post('projects/{project}/refresh-status', [\App\Http\Controllers\Admin\ProjectController::class, 'refreshStatus'])->name('projects.refresh');
     Route::resource('projects', \App\Http\Controllers\Admin\ProjectController::class)->except(['create', 'edit', 'show']);
     Route::resource('products', \App\Http\Controllers\Admin\ProductController::class)->except(['create', 'edit', 'show']);
     Route::resource('albums', \App\Http\Controllers\Admin\AlbumController::class);

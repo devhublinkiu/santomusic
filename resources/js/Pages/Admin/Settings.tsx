@@ -1,11 +1,14 @@
 import AppLayout from '@/Layouts/AppLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, router } from '@inertiajs/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Button } from '@/Components/ui/button';
 import { toast } from 'sonner';
-import { Settings, Image as ImageIcon, CheckCircle2, Phone, Mail } from 'lucide-react';
+import { Settings, Image as ImageIcon, CheckCircle2, Phone, Mail, Film, RefreshCw, Clock, AlertCircle, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import axios from 'axios';
+import { uploadToBunny, MAX_BYTES } from '@/lib/bunnyUpload';
 
 interface SiteSettings {
     logo_vertical: string | null;
@@ -15,6 +18,9 @@ interface SiteSettings {
     hero_background: string | null;
     whatsapp_number: string | null;
     contact_recipient: string | null;
+    wedding_hero_poster: string | null;
+    wedding_hero_video_guid: string | null;
+    wedding_hero_video_status: string | null;
 }
 
 export default function SettingsPage({ settings }: { settings: SiteSettings }) {
@@ -24,9 +30,15 @@ export default function SettingsPage({ settings }: { settings: SiteSettings }) {
         app_profile: null as File | null,
         logo_app: null as File | null,
         hero_background: null as File | null,
+        wedding_hero_poster: null as File | null,
         whatsapp_number: settings.whatsapp_number || '',
         contact_recipient: settings.contact_recipient || '',
     });
+
+    // Subida del video del hero (directo a Bunny Stream vía TUS)
+    const [heroFile, setHeroFile] = useState<File | null>(null);
+    const [heroUploading, setHeroUploading] = useState(false);
+    const [heroPct, setHeroPct] = useState(0);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -37,6 +49,34 @@ export default function SettingsPage({ settings }: { settings: SiteSettings }) {
             onError: () => {
                 toast.error('Hubo un error al actualizar la configuración');
             }
+        });
+    };
+
+    const handleHeroVideo = async () => {
+        if (!heroFile) return;
+        if (heroFile.size > MAX_BYTES) {
+            toast.error('El video supera el límite de 5GB.');
+            return;
+        }
+        setHeroUploading(true);
+        setHeroPct(0);
+        try {
+            const { data: res } = await axios.post(route('admin.settings.hero-video'));
+            await uploadToBunny(heroFile, res.upload, setHeroPct);
+            toast.success('Video del hero subido. Bunny lo está procesando.');
+            setHeroFile(null);
+            router.reload({ only: ['settings'] });
+        } catch (err: any) {
+            toast.error(err?.response?.data?.message || 'Error al subir el video del hero.');
+        } finally {
+            setHeroUploading(false);
+        }
+    };
+
+    const refreshHero = () => {
+        router.post(route('admin.settings.hero-refresh'), {}, {
+            preserveScroll: true,
+            onSuccess: () => toast.success('Estado del hero actualizado'),
         });
     };
 
@@ -157,6 +197,82 @@ export default function SettingsPage({ settings }: { settings: SiteSettings }) {
                                                 Recomendado: 1920x1080px. Máx 20MB para videos.
                                             </p>
                                             {errors.hero_background && <p className="text-xs text-red-500">{errors.hero_background}</p>}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Hero de Bodas */}
+                                <div className="pt-6 border-t border-zinc-100 dark:border-zinc-800">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Film className="size-5 text-pink-500" />
+                                        <h3 className="text-lg font-medium">Hero de Bodas</h3>
+                                    </div>
+                                    <p className="text-xs text-zinc-500 mb-4">
+                                        Portada y video destacado que aparece arriba en la página pública de bodas. Si no hay video listo, el hero no se muestra.
+                                    </p>
+
+                                    <div className="grid gap-6 md:grid-cols-2">
+                                        {/* Portada (imagen) */}
+                                        <div className="space-y-2">
+                                            <Label htmlFor="wedding_hero_poster">Portada (imagen)</Label>
+                                            <div className="flex flex-col items-center gap-4 rounded-lg border-2 border-dashed border-zinc-200 p-4 dark:border-zinc-800">
+                                                {settings.wedding_hero_poster && !data.wedding_hero_poster && (
+                                                    <img src={settings.wedding_hero_poster} alt="Portada hero" className="w-full max-w-xs aspect-video rounded-lg object-cover" />
+                                                )}
+                                                <Input
+                                                    id="wedding_hero_poster"
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="cursor-pointer"
+                                                    onChange={(e) => setData('wedding_hero_poster', e.target.files?.[0] || null)}
+                                                />
+                                                <p className="text-[10px] text-zinc-500 uppercase tracking-widest">
+                                                    Se guarda al presionar "Guardar Cambios".
+                                                </p>
+                                                {errors.wedding_hero_poster && <p className="text-xs text-red-500">{errors.wedding_hero_poster}</p>}
+                                            </div>
+                                        </div>
+
+                                        {/* Video del hero (Bunny Stream) */}
+                                        <div className="space-y-2">
+                                            <Label htmlFor="hero_video">Video del hero</Label>
+                                            <div className="flex flex-col gap-3 rounded-lg border-2 border-dashed border-zinc-200 p-4 dark:border-zinc-800">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs text-zinc-500">Estado:</span>
+                                                    {!settings.wedding_hero_video_guid ? (
+                                                        <span className="text-xs text-zinc-400">Sin video</span>
+                                                    ) : settings.wedding_hero_video_status === 'ready' ? (
+                                                        <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-500"><CheckCircle2 className="size-3" /> Listo</span>
+                                                    ) : settings.wedding_hero_video_status === 'error' ? (
+                                                        <span className="inline-flex items-center gap-1 text-xs font-medium text-red-500"><AlertCircle className="size-3" /> Error</span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-500"><Clock className="size-3 animate-pulse" /> Procesando…</span>
+                                                    )}
+                                                    {settings.wedding_hero_video_guid && settings.wedding_hero_video_status !== 'ready' && (
+                                                        <Button type="button" variant="ghost" size="icon" className="size-7" title="Refrescar estado" onClick={refreshHero}>
+                                                            <RefreshCw className="size-3.5 text-zinc-500" />
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                                <Input
+                                                    id="hero_video"
+                                                    type="file"
+                                                    accept="video/*"
+                                                    onChange={(e) => setHeroFile(e.target.files?.[0] || null)}
+                                                />
+                                                {heroUploading && (
+                                                    <div className="space-y-1">
+                                                        <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+                                                            <div className="h-full bg-indigo-500 transition-all duration-300" style={{ width: `${heroPct}%` }} />
+                                                        </div>
+                                                        <p className="text-xs text-zinc-500">Subiendo… {heroPct}%</p>
+                                                    </div>
+                                                )}
+                                                <Button type="button" variant="secondary" disabled={!heroFile || heroUploading} onClick={handleHeroVideo}>
+                                                    {heroUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                                    Subir video del hero
+                                                </Button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
