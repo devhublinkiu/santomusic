@@ -129,19 +129,6 @@ export default function PublicLayout({ children }: PropsWithChildren) {
                                     </motion.div>
                                 );
                             })}
-
-                            <motion.div 
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: navItems.length * 0.1, duration: 0.4 }}
-                                className="w-full max-w-xs mt-8"
-                            >
-                                <Link href={route('login')} onClick={() => setIsMenuOpen(false)}>
-                                    <Button variant="outline" className="w-full bg-zinc-900 border-white/10 hover:bg-white hover:text-black transition-all uppercase tracking-widest h-14 rounded-full font-bold">
-                                        Entrar
-                                    </Button>
-                                </Link>
-                            </motion.div>
                         </motion.div>
                     )}
                 </AnimatePresence>

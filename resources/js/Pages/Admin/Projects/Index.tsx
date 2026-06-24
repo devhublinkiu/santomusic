@@ -26,7 +26,7 @@ import {
 } from "@/Components/ui/select"
 import { toast } from 'sonner';
 import { FileVideo, Trash2, Plus, Calendar, Edit, Loader2, Link as LinkIcon, UploadCloud, UserCircle, RefreshCw, CheckCircle2, Clock, AlertCircle, Image as ImageIcon } from 'lucide-react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { format } from 'date-fns';
 import axios from 'axios';
 import { uploadToBunny, MAX_BYTES } from '@/lib/bunnyUpload';
@@ -259,6 +259,20 @@ export default function ProjectsIndex({ projects, accessCodes, groupingMode }: {
             onError: () => toast.error('Error al eliminar'),
         });
     };
+
+    // Auto-actualización: mientras haya videos "procesando", consulta el estado cada 8s y se detiene solo.
+    const anyProcessing = projects.data.some((p) => p.video_status === 'processing');
+    useEffect(() => {
+        if (!anyProcessing) return;
+        const id = setInterval(() => {
+            router.post(route('admin.projects.sync'), {}, {
+                preserveScroll: true,
+                preserveState: true,
+                only: ['projects'],
+            });
+        }, 8000);
+        return () => clearInterval(id);
+    }, [anyProcessing]);
 
     return (
         <AppLayout

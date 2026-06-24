@@ -6,7 +6,7 @@ import { Label } from '@/Components/ui/label';
 import { Button } from '@/Components/ui/button';
 import { toast } from 'sonner';
 import { Settings, Image as ImageIcon, CheckCircle2, Phone, Mail, Film, RefreshCw, Clock, AlertCircle, Loader2 } from 'lucide-react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { uploadToBunny, MAX_BYTES } from '@/lib/bunnyUpload';
 import HlsVideo from '@/Components/HlsVideo';
@@ -101,6 +101,19 @@ export default function SettingsPage({ settings, heroHls, heroReady }: { setting
             setSettingHeroThumb(false);
         }
     };
+
+    // Auto-actualización del estado del video del hero: se detiene solo al estar "Listo".
+    useEffect(() => {
+        if (settings.wedding_hero_video_status !== 'processing') return;
+        const id = setInterval(() => {
+            router.post(route('admin.settings.hero-refresh'), {}, {
+                preserveScroll: true,
+                preserveState: true,
+                only: ['settings', 'heroHls', 'heroReady'],
+            });
+        }, 8000);
+        return () => clearInterval(id);
+    }, [settings.wedding_hero_video_status]);
 
     return (
         <AppLayout
@@ -292,11 +305,16 @@ export default function SettingsPage({ settings, heroHls, heroReady }: { setting
                                                         <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-500"><Clock className="size-3 animate-pulse" /> Procesando…</span>
                                                     )}
                                                     {settings.wedding_hero_video_guid && settings.wedding_hero_video_status !== 'ready' && (
-                                                        <Button type="button" variant="ghost" size="icon" className="size-7" title="Refrescar estado" onClick={refreshHero}>
+                                                        <Button type="button" variant="ghost" size="icon" className="size-7" title="Sincronizar estado" onClick={refreshHero}>
                                                             <RefreshCw className="size-3.5 text-zinc-500" />
                                                         </Button>
                                                     )}
                                                 </div>
+                                                {settings.wedding_hero_video_guid && settings.wedding_hero_video_status === 'processing' && (
+                                                    <p className="text-[11px] text-amber-600/80 dark:text-amber-400/80">
+                                                        El video se está procesando en la nube. Se actualiza solo — podés esperar acá o volver más tarde.
+                                                    </p>
+                                                )}
                                                 <Input
                                                     id="hero_video"
                                                     type="file"

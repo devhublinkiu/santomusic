@@ -135,6 +135,34 @@ class ProjectController extends Controller
     }
 
     /**
+     * Sincroniza el estado de TODOS los proyectos en proceso (para el auto-refresh de la UI).
+     */
+    public function syncStatuses(BunnyStreamService $stream)
+    {
+        $projects = Project::whereNotNull('video_guid')
+            ->where('video_status', 'processing')
+            ->get();
+
+        foreach ($projects as $project) {
+            $info = $stream->getVideo($project->video_guid);
+            if (! $info) {
+                continue;
+            }
+            $status = $stream->mapStatus($info['status'] ?? null);
+            if ($status !== $project->video_status) {
+                $project->video_status = $status;
+                if ($status === 'ready') {
+                    $project->video_width = $info['width'] ?? null;
+                    $project->video_height = $info['height'] ?? null;
+                }
+                $project->save();
+            }
+        }
+
+        return back();
+    }
+
+    /**
      * Consulta manual del estado de transcodificación (botón "Refrescar").
      */
     public function refreshStatus(Project $project, BunnyStreamService $stream)

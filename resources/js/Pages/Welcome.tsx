@@ -39,7 +39,7 @@ export default function Welcome({ auth }: PageProps) {
                     <img
                         src="https://images.unsplash.com/photo-1514525253344-f81bad3b757a?auto=format&fit=crop&q=80&w=2575"
                         alt="Fondo Predeterminado Santo Music"
-                        className="absolute inset-0 h-full w-full object-cover grayscale brightness-50 pointer-events-none"
+                        className="absolute inset-0 h-full w-full object-cover grayscale/20 brightness-80 pointer-events-none"
                     />
                 )}
 

@@ -57,6 +57,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureUserIsAdmin::class])->pref
     Route::resource('access-codes', \App\Http\Controllers\Admin\AccessCodeController::class)->except(['create', 'edit', 'show']);
     Route::post('projects/grouping', [\App\Http\Controllers\Admin\ProjectController::class, 'updateGrouping'])->name('projects.grouping');
     Route::post('projects/{project}/video', [\App\Http\Controllers\Admin\ProjectController::class, 'replaceVideo'])->name('projects.video');
+    Route::post('projects/sync-statuses', [\App\Http\Controllers\Admin\ProjectController::class, 'syncStatuses'])->name('projects.sync');
     Route::post('projects/{project}/refresh-status', [\App\Http\Controllers\Admin\ProjectController::class, 'refreshStatus'])->name('projects.refresh');
     Route::post('projects/{project}/thumbnail', [\App\Http\Controllers\Admin\ProjectController::class, 'setThumbnail'])->name('projects.thumbnail');
     Route::resource('projects', \App\Http\Controllers\Admin\ProjectController::class)->except(['create', 'edit', 'show']);
