@@ -20,7 +20,9 @@ interface Video {
 export default function Channel({ videos }: { videos: Video[] }) {
     return (
         <PublicLayout>
-            <Head title="Canal" />
+            <Head title="Canal">
+                <meta name="description" head-key="description" content="Mirá el canal de Santo Music: videos, sesiones y contenido audiovisual original." />
+            </Head>
 
             {/* Header Content */}
             <div className="relative pt-32 pb-12 px-6 md:px-12 overflow-hidden">

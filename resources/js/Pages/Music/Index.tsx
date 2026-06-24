@@ -18,7 +18,9 @@ interface Album {
 export default function Index({ albums }: { albums: Album[] }) {
     return (
         <PublicLayout>
-            <Head title="Música" />
+            <Head title="Música">
+                <meta name="description" head-key="description" content="Escuchá la música de Santo Music: álbumes, sencillos y todos nuestros lanzamientos en un solo lugar." />
+            </Head>
 
             <div className="py-24 px-6 md:px-12">
                 <div className="mx-auto max-w-7xl">

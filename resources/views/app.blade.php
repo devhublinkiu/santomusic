@@ -5,10 +5,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        @php($favicon = optional(\App\Models\SiteSetting::first())->favicon)
-        @if($favicon)
-            <link rel="icon" href="{{ $favicon }}">
-        @endif
+        {{-- Favicon (el subido desde el admin, o el de la raíz como fallback) + canonical --}}
+        <link rel="icon" sizes="any" href="{{ optional(\App\Models\SiteSetting::first())->favicon ?: '/favicon.ico' }}">
+        <link rel="canonical" href="{{ url()->current() }}">
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 

@@ -59,7 +59,9 @@ export default function Show({ album }: { album: Album }) {
 
     return (
         <PublicLayout>
-            <Head title={album.title} />
+            <Head title={album.title}>
+                <meta name="description" head-key="description" content={album.description || `${album.title} — escuchá el álbum completo de Santo Music.`} />
+            </Head>
 
             <div className="py-24 px-6 md:px-12">
                 <div className="mx-auto max-w-6xl">

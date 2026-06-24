@@ -9,12 +9,14 @@ import { toast } from 'sonner';
 import { Input } from "@/Components/ui/input";
 import { Textarea } from "@/Components/ui/textarea";
 
-export default function ContactIndex() {
+export default function ContactIndex({ formToken }: { formToken: string }) {
     const { data, setData, post, processing, reset, errors, recentlySuccessful } = useForm({
         name: '',
         email: '',
         subject: '',
         message: '',
+        website: '', // honeypot (debe quedar vacío)
+        form_token: formToken,
     });
 
     const submit = (e: React.FormEvent) => {
@@ -32,7 +34,9 @@ export default function ContactIndex() {
 
     return (
         <PublicLayout>
-            <Head title="Contacto" />
+            <Head title="Contacto">
+                <meta name="description" head-key="description" content="Contactá a Santo Music. Escribinos para música, eventos, bodas o cualquier consulta." />
+            </Head>
 
             <div className="min-h-screen bg-[#0a0a0a] text-white">
                 {/* Hero Section */}
@@ -72,6 +76,20 @@ export default function ContactIndex() {
                                     </div>
 
                                     <form onSubmit={submit} className="space-y-6">
+                                        {/* Honeypot anti-spam: invisible para humanos, los bots lo rellenan */}
+                                        <div className="absolute left-[-9999px] top-[-9999px] h-0 w-0 overflow-hidden" aria-hidden="true">
+                                            <label htmlFor="website">No completar este campo</label>
+                                            <input
+                                                type="text"
+                                                id="website"
+                                                name="website"
+                                                tabIndex={-1}
+                                                autoComplete="off"
+                                                value={data.website}
+                                                onChange={e => setData('website', e.target.value)}
+                                            />
+                                        </div>
+
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="space-y-2">
                                                 <label htmlFor="name" className="text-xs font-semibold uppercase tracking-wider text-zinc-400">

@@ -46,7 +46,9 @@ export default function WeddingIndex({
 
     return (
         <PublicLayout>
-            <Head title="Bodas" />
+            <Head title="Bodas">
+                <meta name="description" head-key="description" content="Video y producción audiovisual para bodas por Santo Music. Mirá nuestros trabajos y reviví cada momento." />
+            </Head>
 
             <AccessCodeLock isVerified={isVerified} />
 

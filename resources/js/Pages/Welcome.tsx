@@ -11,7 +11,9 @@ export default function Welcome({ auth }: PageProps) {
     const settings = site?.settings;
     return (
         <PublicLayout>
-            <Head title="Inicio" />
+            <Head title="Inicio">
+                <meta name="description" head-key="description" content="Santo Music — música, videos y producción audiovisual. Escuchá nuestros lanzamientos, mirá el canal y descubrí nuestros trabajos de bodas." />
+            </Head>
 
             <div className="relative h-[60vh] md:h-[80vh] min-h-[500px] w-full overflow-hidden">
                 {/* Hero Image Overlay */}
@@ -32,7 +34,7 @@ export default function Welcome({ auth }: PageProps) {
                         <img
                             src={settings.hero_background}
                             alt="Fondo de Santo Music"
-                            className="absolute inset-0 h-full w-full object-cover grayscale brightness-50 pointer-events-none"
+                            className="absolute inset-0 h-full w-full object-cover grayscale/20 brightness-80 pointer-events-none"
                         />
                     )
                 ) : (

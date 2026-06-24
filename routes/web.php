@@ -18,11 +18,13 @@ Route::get('/', function () {
 Route::post('/gatekeeper/verify', [\App\Http\Controllers\GatekeeperController::class , 'verify'])->name('gatekeeper.verify');
 Route::post('/gatekeeper/lock', [\App\Http\Controllers\GatekeeperController::class , 'lock'])->name('gatekeeper.lock');
 
+Route::get('/sitemap.xml', [\App\Http\Controllers\SitemapController::class, 'index'])->name('sitemap');
+
 // Public Wedding Route (Access controlled by View)
 Route::get('/bodas', [\App\Http\Controllers\WeddingController::class , 'index'])->name('weddings.index');
 Route::get('/shop', [\App\Http\Controllers\ShopController::class , 'index'])->name('shop.index');
 Route::get('/contact', [\App\Http\Controllers\ContactController::class, 'index'])->name('contact.index');
-Route::post('/contact', [\App\Http\Controllers\ContactController::class, 'submit'])->name('contact.submit');
+Route::post('/contact', [\App\Http\Controllers\ContactController::class, 'submit'])->middleware('throttle:5,1')->name('contact.submit');
 Route::get('/checkout', [\App\Http\Controllers\Shop\CheckoutController::class , 'index'])->name('checkout.index');
 Route::post('/checkout/process', [\App\Http\Controllers\Shop\CheckoutController::class , 'process'])->name('checkout.process');
 Route::get('/channel', [\App\Http\Controllers\Home\ChannelController::class, 'index'])->name('channel.index');

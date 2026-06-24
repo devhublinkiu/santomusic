@@ -35,7 +35,9 @@ export default function ShopIndex({
 
     return (
         <PublicLayout>
-            <Head title="Tienda" />
+            <Head title="Tienda">
+                <meta name="description" head-key="description" content="Tienda oficial de Santo Music: merch y productos exclusivos. Consultá y comprá fácil." />
+            </Head>
 
             <div className="min-h-screen bg-[#0a0a0a] text-white">
                 {/* Hero Section */}

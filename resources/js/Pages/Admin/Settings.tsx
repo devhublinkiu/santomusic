@@ -223,7 +223,7 @@ export default function SettingsPage({ settings, heroHls, heroReady }: { setting
                                                 onChange={(e) => setData('favicon', e.target.files?.[0] || null)}
                                             />
                                             <p className="text-[10px] text-zinc-500 uppercase tracking-widest">
-                                                .ico, .png o .svg — recomendado 32x32 o 64x64px.
+                                                .ico, .png o .svg — cuadrado, mínimo 96×96px (para que Google lo muestre).
                                             </p>
                                             {errors.favicon && <p className="text-xs text-red-500">{errors.favicon}</p>}
                                         </div>
